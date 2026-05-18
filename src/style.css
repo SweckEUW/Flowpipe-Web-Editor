@@ -1,0 +1,127 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+html, body, #app {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-size: 13px;
+  background: #1a1a1a;
+  color: #cccccc;
+}
+
+/* ─── Baklava dark theme overrides (syrup-dark variable names) ─── */
+:root {
+  --baklava-control-color-primary: #EA5160;
+  --baklava-control-color-background: #2d2d2d;
+  --baklava-control-color-foreground: #cccccc;
+  --baklava-control-color-hover: #3d3d3d;
+  --baklava-control-color-active: #4d4d4d;
+  --baklava-node-color-background: #222222;
+  --baklava-node-color-foreground: #eeeeee;
+  --baklava-node-color-hover: rgba(234,81,96,0.3);
+  --baklava-node-color-selected: #EA5160;
+  --baklava-node-title-color-background: #1a1a1a;
+  --baklava-node-title-color-foreground: #ffffff;
+  --baklava-node-color-resize-handle: #2d2d2d;
+  --baklava-node-interface-port-color: #888888;
+  --baklava-editor-background-pattern-default: #1a1a1a;
+  --baklava-editor-background-pattern-line: #242424;
+  --baklava-editor-background-pattern-black: #222222;
+  --baklava-color-connection-default: #555555;
+  --baklava-color-connection-allowed: #48bc79;
+  --baklava-color-connection-forbidden: #bc4848;
+  --baklava-context-menu-background: #222222;
+  --baklava-sidebar-color-background: #1a1a1a;
+  --baklava-sidebar-color-foreground: #cccccc;
+  --baklava-toolbar-background: #1a1a1aaa;
+  --baklava-toolbar-foreground: #cccccc;
+  --baklava-node-palette-background: #1a1a1aaa;
+  --baklava-node-palette-foreground: #cccccc;
+}
+
+/* PrimeVue dark overrides */
+.p-dialog {
+  background: #222222 !important;
+  border: 1px solid #3d3d3d !important;
+  color: #cccccc !important;
+}
+
+.p-dialog .p-dialog-header {
+  background: #222222 !important;
+  color: #eeeeee !important;
+  border-bottom: 1px solid #3d3d3d !important;
+}
+
+.p-dialog .p-dialog-content {
+  background: #222222 !important;
+  color: #cccccc !important;
+}
+
+.p-inputtext {
+  background: #2d2d2d !important;
+  border-color: #3d3d3d !important;
+  color: #cccccc !important;
+}
+
+.p-inputtext:focus {
+  border-color: #4d7cfe !important;
+  box-shadow: 0 0 0 2px rgba(77,124,254,0.2) !important;
+}
+
+.p-listbox {
+  background: #2d2d2d !important;
+  border-color: #3d3d3d !important;
+  color: #cccccc !important;
+}
+
+.p-listbox .p-listbox-list-wrapper {
+  background: #2d2d2d !important;
+}
+
+.p-listbox .p-listbox-item {
+  color: #cccccc !important;
+}
+
+.p-listbox .p-listbox-item:hover {
+  background: #3d3d3d !important;
+}
+
+.p-listbox .p-listbox-item.p-highlight {
+  background: #4d7cfe !important;
+  color: #ffffff !important;
+}
+
+.p-button {
+  background: #3d3d3d !important;
+  border-color: #555555 !important;
+  color: #cccccc !important;
+}
+
+.p-button:hover {
+  background: #4d4d4d !important;
+}
+
+.p-button.p-button-primary {
+  background: #4d7cfe !important;
+  border-color: #4d7cfe !important;
+  color: #ffffff !important;
+}
+
+.p-button.p-button-primary:hover {
+  background: #3d6cee !important;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: #1a1a1a; }
+::-webkit-scrollbar-thumb { background: #3d3d3d; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #555555; }

@@ -1,0 +1,78 @@
+{
+  "nodes": [
+    {
+      "type": "ImportNode",
+      "label": "Import EXR Sequence",
+      "category": "I/O",
+      "module": "corridorkey_pipeline.nodes.import_node",
+      "cls": "ImportNode",
+      "file_location": "corridorkey_pipeline/nodes/import_node.py",
+      "inputs": [
+        { "name": "sequence_dir", "valueType": "dirpath", "default": "" }
+      ],
+      "outputs": [
+        { "name": "frames", "valueType": "any" },
+        { "name": "shot_name", "valueType": "string" },
+        { "name": "frame_names", "valueType": "any" }
+      ]
+    },
+    {
+      "type": "GenerateAlphaHintNode",
+      "label": "Generate Alpha Hint",
+      "category": "Keying",
+      "module": "corridorkey_pipeline.nodes.generate_alpha_hint_node",
+      "cls": "GenerateAlphaHintNode",
+      "file_location": "corridorkey_pipeline/nodes/generate_alpha_hint_node.py",
+      "inputs": [
+        { "name": "frames", "valueType": "any" },
+        { "name": "screen_color", "valueType": "select", "default": "green", "options": ["green", "blue", "red"] },
+        { "name": "threshold", "valueType": "number", "default": 0.3 },
+        { "name": "blur_radius", "valueType": "integer", "default": 5 }
+      ],
+      "outputs": [
+        { "name": "alpha_hints", "valueType": "any" }
+      ]
+    },
+    {
+      "type": "CorridorKeyNode",
+      "label": "CorridorKey (Neural Matte)",
+      "category": "Keying",
+      "module": "corridorkey_pipeline.nodes.corridorkey_node",
+      "cls": "CorridorKeyNode",
+      "file_location": "corridorkey_pipeline/nodes/corridorkey_node.py",
+      "inputs": [
+        { "name": "frames", "valueType": "any" },
+        { "name": "alpha_hints", "valueType": "any" },
+        { "name": "corridorkey_root", "valueType": "dirpath", "default": "" },
+        { "name": "device", "valueType": "select", "default": "auto", "options": ["auto", "cpu", "cuda", "mps"] },
+        { "name": "despill_strength", "valueType": "number", "default": 0.5 }
+      ],
+      "outputs": [
+        { "name": "mattes", "valueType": "any" },
+        { "name": "fg_colors", "valueType": "any" },
+        { "name": "processed_frames", "valueType": "any" }
+      ]
+    },
+    {
+      "type": "ExportNode",
+      "label": "Export EXR",
+      "category": "I/O",
+      "module": "corridorkey_pipeline.nodes.export_node",
+      "cls": "ExportNode",
+      "file_location": "corridorkey_pipeline/nodes/export_node.py",
+      "inputs": [
+        { "name": "mattes", "valueType": "any" },
+        { "name": "fg_colors", "valueType": "any" },
+        { "name": "processed_frames", "valueType": "any" },
+        { "name": "shot_name", "valueType": "string", "default": "shot" },
+        { "name": "frame_names", "valueType": "any" },
+        { "name": "output_dir", "valueType": "dirpath", "default": "output" }
+      ],
+      "outputs": [
+        { "name": "matte_dir", "valueType": "string" },
+        { "name": "fg_dir", "valueType": "string" },
+        { "name": "processed_dir", "valueType": "string" }
+      ]
+    }
+  ]
+}
