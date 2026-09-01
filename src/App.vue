@@ -1,7 +1,7 @@
 <template>
-  <AppLayout />
+  <FlowPipeEditor/>
 </template>
 
 <script setup lang="ts">
-import AppLayout from './components/AppLayout.vue'
+import FlowPipeEditor from './components/FlowPipeEditor.vue';
 </script>

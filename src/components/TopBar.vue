@@ -1,5 +1,5 @@
 <template>
-  <header class="top-bar flex items-center gap-2 px-4 bg-surface-800 border-b border-surface-500 flex-shrink-0">
+  <header class="h-[80px] flex items-center gap-2 px-4 bg-surface-800 border-b border-surface-500 flex-shrink-0">
     <div class="flex items-center gap-2 mr-4">
       <i class="pi pi-share-alt text-accent" style="font-size: 16px" />
       <span class="text-sm font-semibold text-gray-200">Flowpipe Editor</span>
@@ -7,101 +7,56 @@
 
     <div class="flex items-center gap-2 ml-auto">
       <Button
-        label="Load"
-        icon="pi pi-upload"
+        :label="isSaving ? 'Saving…' : 'Save'"
+        :icon="isSaving ? 'pi pi-spin pi-spinner' : 'pi pi-save'"
         size="small"
-        severity="secondary"
-        @click="handleLoad"
-      />
-      <Button
-        label="Save"
-        icon="pi pi-download"
-        size="small"
-        severity="secondary"
+        severity="success"
         @click="handleSave"
       />
-      <Button
-        :label="running ? 'Running…' : 'Run'"
-        :icon="running ? 'pi pi-spin pi-spinner' : 'pi pi-play'"
+      
+      <!-- <Button
+        :label="isRunning ? 'Running…' : 'Run'"
+        :icon="isRunning ? 'pi pi-spin pi-spinner' : 'pi pi-play'"
         size="small"
         severity="primary"
-        :disabled="running"
+        :disabled="isRunning"
         @click="handleRun"
-      />
+      /> -->
     </div>
   </header>
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
 import Button from 'primevue/button'
-import { useToast } from 'primevue/usetoast'
-import { useTabStore } from '../stores/tabStore'
-import { useFlowpipeSerializer } from '../composables/useFlowpipeSerializer'
+import { inject, ref } from 'vue';
+import { baklavaToFlowpipeJson } from '../util/flowpipeBaklavaConverter';
 
-const tabStore = useTabStore()
-const toast = useToast()
-const { toFlowpipeJson, fromFlowpipeJson, downloadJson, loadFromFile } = useFlowpipeSerializer()
+// let isRunning = ref(false);
+let isSaving = ref(false);
 
-const running = ref(false)
+const registerSave = inject<(flowpipeJson: string) => Promise<void> | void>('registerSave', async () => undefined)
 
-async function handleRun() {
-  const tab = tabStore.activeTab()
-  if (!tab) return
+async function handleSave() {
+  isSaving.value = true;
 
-  const graph = toFlowpipeJson(tab.editor, tab.name)
-  running.value = true
+  // Simulate a save operation. TODO: (replace this with your actual save logic)
+  // let updateFlowpipeJson = baklavaToFlowpipeJson() // Save the current state of the Baklava editor to Flowpipe JSON
+  let updateFlowpipeJson = "{ 'test' : 'wasd' }";
 
-  try {
-    const res = await fetch('/api/run', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(graph),
-    })
-
-    if (!res.ok) {
-      const text = await res.text().catch(() => `HTTP ${res.status}`)
-      throw new Error(text || `HTTP ${res.status}`)
-    }
-
-    toast.add({
-      severity: 'success',
-      summary: 'Pipeline executed',
-      detail: `"${tab.name}" finished successfully.`,
-      life: 4000,
-    })
-  } catch (err) {
-    toast.add({
-      severity: 'error',
-      summary: 'Execution failed',
-      detail: err instanceof Error ? err.message : String(err),
-      life: 6000,
-    })
-  } finally {
-    running.value = false
-  }
+  await registerSave(updateFlowpipeJson);
+  isSaving.value = false;
 }
 
-function handleSave() {
-  const tab = tabStore.activeTab()
-  if (!tab) return
-  const graph = toFlowpipeJson(tab.editor, tab.name)
-  downloadJson(graph, `${tab.name.replace(/\s+/g, '_')}.json`)
-}
+// async function handleRun() {
+//   isRunning.value = true;
 
-async function handleLoad() {
-  try {
-    const data = await loadFromFile()
-    const tab = tabStore.addTab(data.name || 'Loaded Graph')
-    fromFlowpipeJson(data, tab.editor)
-  } catch (e) {
-    console.error('Load failed:', e)
-  }
-}
+//   try {
+//     // Simulate a run operation (replace this with your actual run logic)
+//     await new Promise(resolve => setTimeout(resolve, 2000));
+//   } catch (error) {
+//     console.error('Error running:', error);
+//   } finally {
+//     isRunning.value = false;
+//   }
+// }
 </script>
-
-<style scoped>
-.top-bar {
-  height: 44px;
-}
-</style>

@@ -1,5 +1,4 @@
 import { createApp } from 'vue'
-import { createPinia } from 'pinia'
 import PrimeVue from 'primevue/config'
 import ToastService from 'primevue/toastservice'
 import FlowpipePreset from './theme/preset'
@@ -10,7 +9,6 @@ import App from './App.vue'
 
 const app = createApp(App)
 
-app.use(createPinia())
 app.use(ToastService)
 app.use(PrimeVue, {
   theme: {

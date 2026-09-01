@@ -1,16 +1,26 @@
 import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
+import { resolve } from 'path'
+import cssInjectedByJsPlugin from "vite-plugin-css-injected-by-js";
 
-// https://vite.dev/config/
 export default defineConfig({
-  base: process.env.VITE_BASE_URL ?? '/',
-  plugins: [vue()],
+  plugins: [vue(), cssInjectedByJsPlugin()],
   server: {
-    proxy: {
-      '/api': {
-        target: 'http://localhost:8000',
-        changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/api/, ''),
+    open: true,
+  },
+  build: {
+    lib: {
+      entry: resolve(__dirname, 'src/index.ts'), // Einstiegspunkt deiner Library
+      name: 'MyGraphComponent',                  // Globaler Name (für UMD/IIFE)
+      fileName: 'my-graph-component',            // Dateipräfix der Outputs
+    },
+    rollupOptions: {
+      // Vue soll extern bleiben, damit das Hauptprojekt seine eigene Vue-Instanz nutzt
+      external: ['vue'],
+      output: {
+        globals: {
+          vue: 'Vue',
+        },
       },
     },
   },
