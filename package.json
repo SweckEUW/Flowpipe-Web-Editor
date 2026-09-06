@@ -6,18 +6,20 @@
   "files": [
     "dist"
   ],
-  "main": "./dist/my-graph-component.umd.cjs",
-  "module": "./dist/my-graph-component.js",
+  "main": "./dist/flowpipe-web-editor.umd.cjs",
+  "module": "./dist/flowpipe-web-editor.js",
   "exports": {
     ".": {
-      "import": "./dist/my-graph-component.js",
-      "require": "./dist/my-graph-component.umd.cjs"
+      "import": "./dist/flowpipe-web-editor.js",
+      "require": "./dist/flowpipe-web-editor.umd.cjs"
     }
   },
   "scripts": {
     "dev": "vite",
-    "build": "vue-tsc -b && vite build",
-    "watch-yalc": "vite build --watch & sleep 2 && yalc publish --push"
+    "build": "vite build",
+    "build2": "vue-tsc -b && vite build",
+    "watch-yalc": "vite build --watch & sleep 2 && yalc publish --push",
+    "build:watch": "vite build --watch"
   },
   "dependencies": {
     "@baklavajs/core": "^2.8.1",

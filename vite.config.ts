@@ -1,27 +1,34 @@
+import { exec } from 'node:child_process'
 import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
-import { resolve } from 'path'
-import cssInjectedByJsPlugin from "vite-plugin-css-injected-by-js";
+import cssInjectedByJsPlugin from 'vite-plugin-css-injected-by-js'
 
+// Push changes via yalc after bundle completes
+const yalcAutoPushPlugin = () => ({
+  name: 'yalc-auto-push',
+  closeBundle() {
+    exec('yalc push --changed', (err, stdout) => {
+      if (err) console.error('[yalc error]', err)
+      if (stdout) console.log(stdout.trim())
+    })
+  }
+})
+ 
 export default defineConfig({
-  plugins: [vue(), cssInjectedByJsPlugin()],
-  server: {
-    open: true,
-  },
+  plugins: [vue(), yalcAutoPushPlugin(), cssInjectedByJsPlugin()],
   build: {
     lib: {
-      entry: resolve(__dirname, 'src/index.ts'), // Einstiegspunkt deiner Library
-      name: 'MyGraphComponent',                  // Globaler Name (für UMD/IIFE)
-      fileName: 'my-graph-component',            // Dateipräfix der Outputs
+      entry: 'src/index.ts',
+      name: 'FlowpipeWebEditor',
+      fileName: 'flowpipe-web-editor'
     },
     rollupOptions: {
-      // Vue soll extern bleiben, damit das Hauptprojekt seine eigene Vue-Instanz nutzt
-      external: ['vue'],
+      external: ['vue', 'primevue'],
       output: {
         globals: {
-          vue: 'Vue',
-        },
-      },
-    },
-  },
+          vue: 'Vue'
+        }
+      }
+    }
+  }
 })
