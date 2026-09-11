@@ -1,14 +1,14 @@
 {
   "name": "flowpipe-web-editor",
   "private": false,
-  "version": "0.0.1",
+  "version": "0.0.3",
   "type": "module",
   "files": [
     "dist"
   ],
   "main": "./dist/flowpipe-web-editor.umd.cjs",
   "module": "./dist/flowpipe-web-editor.js",
-  "exports": {
+  "exports": { 
     ".": {
       "import": "./dist/flowpipe-web-editor.js",
       "require": "./dist/flowpipe-web-editor.umd.cjs"
@@ -16,9 +16,7 @@
   },
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
-    "build2": "vue-tsc -b && vite build",
-    "watch-yalc": "vite build --watch & sleep 2 && yalc publish --push",
+    "build": "vue-tsc -b && vite build",
     "build:watch": "vite build --watch"
   },
   "dependencies": {
@@ -26,24 +24,23 @@
     "@baklavajs/engine": "^2.8.1",
     "@baklavajs/interface-types": "^2.8.1",
     "@baklavajs/renderer-vue": "^2.8.1",
-    "@baklavajs/themes": "^2.8.1"
-  },
-  "peerDependencies": {
+    "@baklavajs/themes": "^2.8.1",
     "@primevue/themes": "^4.5.4",
     "primeicons": "^7.0.0",
-    "primevue": "^4.5.5",
+    "primevue": "^4.5.5"
+  },
+  "peerDependencies": {
     "vue": "^3.5.34"
   },
   "devDependencies": {
+    "@tailwindcss/vite": "^4.3.3",
     "@types/node": "^24.12.3",
     "@vitejs/plugin-vue": "^6.0.6",
     "@vue/tsconfig": "^0.9.1",
-    "autoprefixer": "^10.5.0",
-    "postcss": "^8.5.14",
-    "tailwindcss": "^3.4.19",
+    "tailwindcss": "^4.3.3",
     "typescript": "~6.0.2",
     "vite": "^8.0.12",
-    "vue-tsc": "^3.2.8",
-    "vite-plugin-css-injected-by-js": "^5.0.2"
+    "vite-plugin-css-injected-by-js": "^5.0.2",
+    "vue-tsc": "^3.2.8"
   }
-} 
+}

@@ -1,14 +1,12 @@
 <template>
-  <Toast position="bottom-right" />
-
-  <div class="w-screen h-screen flex flex-col bg-surface-800">
-    <TopBar />
+  <div class="w-full h-full flex flex-col bg-surface-800">
+    <TopBar :saveHandler="saveHandler" />
     <!-- <TabBar /> -->
 
     <div class="canvas-area flex flex-1 overflow-hidden">
       <div class="flex-1 relative overflow-hidden">
-        <GraphCanvas/>
-      </div>
+        <GraphCanvas :flowpipeNodes="flowpipeNodes"/>
+      </div>  
 
       <!-- <RightSidebar /> -->
     </div>
@@ -22,19 +20,21 @@
 </template>
 
 <script setup lang="ts">
-import Toast from 'primevue/toast'
-import GraphCanvas from './GraphCanvas.vue'
-import TopBar from './TopBar.vue'
-import { provide } from 'vue';
+import { FlowpipeNode } from '../types/flowpipe';
+import GraphCanvas from './GraphCanvas.vue';
+import TopBar from './TopBar.vue';   
 // import RightSidebar from './RightSidebar.vue'
 // import NodeSearchDialog from './NodeSearchDialog.vue'
 
-const props = defineProps<{
-  flowpipeJson: string | undefined
-  saveHandler: (flowpipeJson: string) => Promise<void> | void
-}>()
+interface FlowpipeProps {
+  flowpipeJson?: string
+  flowpipeNodes?: FlowpipeNode[]
+  saveHandler?: (flowpipeJson: string) => Promise<void> | void
+}
 
-provide('registerSave', async (flowpipeJson: string) => {
-  await props.saveHandler(flowpipeJson)
-})
+const {
+  flowpipeJson,
+  flowpipeNodes = [],
+  saveHandler,
+} = defineProps<FlowpipeProps>()
 </script>

@@ -7,6 +7,7 @@
 
     <div class="flex items-center gap-2 ml-auto">
       <Button
+        v-if="saveHandler"
         :label="isSaving ? 'Saving…' : 'Save'"
         :icon="isSaving ? 'pi pi-spin pi-spinner' : 'pi pi-save'"
         size="small"
@@ -28,13 +29,16 @@
 
 <script setup lang="ts">
 import Button from 'primevue/button'
-import { inject, ref } from 'vue';
-import { baklavaToFlowpipeJson } from '../util/flowpipeBaklavaConverter';
+import { ref } from 'vue';
+// import { baklavaToFlowpipeJson } from '../util/flowpipeBaklavaConverter';
 
-// let isRunning = ref(false);
+const props = defineProps<{
+  saveHandler: ((flowpipeJson: string) => Promise<void> | void) | undefined
+  // runHandler: ((flowpipeJson: string) => Promise<void> | void) | undefined
+}>()
+
+let isRunning = ref(false);
 let isSaving = ref(false);
-
-const registerSave = inject<(flowpipeJson: string) => Promise<void> | void>('registerSave', async () => undefined)
 
 async function handleSave() {
   isSaving.value = true;
@@ -43,20 +47,20 @@ async function handleSave() {
   // let updateFlowpipeJson = baklavaToFlowpipeJson() // Save the current state of the Baklava editor to Flowpipe JSON
   let updateFlowpipeJson = "{ 'test' : 'wasd' }";
 
-  await registerSave(updateFlowpipeJson);
+  await props.saveHandler!(updateFlowpipeJson);
   isSaving.value = false;
 }
 
-// async function handleRun() {
-//   isRunning.value = true;
+async function handleRun() {
+  isRunning.value = true;
 
-//   try {
-//     // Simulate a run operation (replace this with your actual run logic)
-//     await new Promise(resolve => setTimeout(resolve, 2000));
-//   } catch (error) {
-//     console.error('Error running:', error);
-//   } finally {
-//     isRunning.value = false;
-//   }
-// }
+  try {
+    // Simulate a run operation (replace this with your actual run logic)
+    await new Promise(resolve => setTimeout(resolve, 2000));
+  } catch (error) {
+    console.error('Error running:', error);
+  } finally {
+    isRunning.value = false;
+  }
+}
 </script>
