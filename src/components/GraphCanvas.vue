@@ -5,35 +5,18 @@
 </template>
 
 <script setup lang="ts">
-import { BaklavaEditor, useBaklava } from '@baklavajs/renderer-vue'
-import { defineNode } from "@baklavajs/core";
-import { FlowpipeNode } from '../types/flowpipe';
-import { flowpipeNodeToBaklava } from '../util/flowpipeBaklavaConverter';
-
-interface GraphCanvasProps {
-  flowpipeNodes: FlowpipeNode[]
-}
-
-const {
-  flowpipeNodes,
-} = defineProps<GraphCanvasProps>()
-
-const baklava = useBaklava()
+import { BaklavaEditor } from '@baklavajs/renderer-vue'
+import { useFlowpipeEditor } from '../composables/useFlowpipeEditor'
+ 
+const { baklava } = useFlowpipeEditor() 
 // baklava.settings.palette.enabled = false
 // baklava.settings.sidebar.enabled = false
 // baklava.settings.toolbar.enabled = false
 // baklava.settings.enableMinimap = true
 // baklava.settings.displayValueOnHover = true
 
-// TODO: Flowpipe Nodes have to be converted to Baklava Nodes. 
-flowpipeNodes.forEach(flowpipeNode => {
-  let convertedNode = flowpipeNodeToBaklava(flowpipeNode);
-  let baklavaNode = defineNode(convertedNode);
-
-  baklava.editor.registerNodeType(baklavaNode);
-});
-
 // TODO: Check if the connections between the nodes are valid. If not, remove them.
+// Belongs into useFlowpipeEditor() next to the node type registration.
 // baklava.editor.graphEvents.checkConnection.subscribe("typeValidator", (data) => {
 //   const fromType = (data.from as any).dataType;
 //   const toType = (data.to as any).dataType;
@@ -76,3 +59,13 @@ flowpipeNodes.forEach(flowpipeNode => {
 
 // defineExpose({ insertNode })
 </script>
+
+<style>
+.baklava-editor .background {
+  background-image:
+    radial-gradient(circle, #444 1px, transparent 1.5px),
+    none,
+    radial-gradient(circle, #444 1px, transparent 1.5px),
+    none !important;
+}
+</style>

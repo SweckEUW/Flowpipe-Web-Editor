@@ -26,5 +26,8 @@ const FlowpipeEditorPlugin = {
 
 // Export specific modules
 export { FlowPipeEditor, FlowpipeEditorPlugin }
+export { useFlowpipeEditor } from './composables/useFlowpipeEditor'
 
-export type { FlowpipeNode, FlowpipeGraph } from './types/flowpipe.ts'
+export type { FlowpipeEditorContext } from './composables/useFlowpipeEditor'
+
+export type { SerializedFlowpipeNode, SerializedFlowpipeGraph } from './types/flowpipe'

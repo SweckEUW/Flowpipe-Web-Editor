@@ -1,11 +1,11 @@
 <template>
   <div class="w-full h-full flex flex-col bg-surface-800">
-    <TopBar :saveHandler="saveHandler" />
+    <TopBar :saveHandler="saveHandler" :runHandler="runHandler" :displayDownloadButton="displayDownloadButton" :displayLoadButton="displayLoadButton" />
     <!-- <TabBar /> -->
 
     <div class="canvas-area flex flex-1 overflow-hidden">
       <div class="flex-1 relative overflow-hidden">
-        <GraphCanvas :flowpipeNodes="flowpipeNodes"/>
+        <GraphCanvas />
       </div>  
 
       <!-- <RightSidebar /> -->
@@ -20,21 +20,23 @@
 </template>
 
 <script setup lang="ts">
-import { FlowpipeNode } from '../types/flowpipe';
+import { SerializedFlowpipeGraph, SerializedFlowpipeNode } from '../types/flowpipe';
+import { provideFlowpipeEditor } from '../composables/useFlowpipeEditor';
 import GraphCanvas from './GraphCanvas.vue';
 import TopBar from './TopBar.vue';   
 // import RightSidebar from './RightSidebar.vue'
 // import NodeSearchDialog from './NodeSearchDialog.vue'
 
-interface FlowpipeProps {
-  flowpipeJson?: string
-  flowpipeNodes?: FlowpipeNode[]
-  saveHandler?: (flowpipeJson: string) => Promise<void> | void
+interface FlowPipeEditorProps {
+  nodeLibrary?: SerializedFlowpipeNode[]
+  graph?: SerializedFlowpipeGraph
+  saveHandler?: (graph: SerializedFlowpipeGraph) => Promise<void> | void,
+  runHandler?: (graph: SerializedFlowpipeGraph) => Promise<void> | void,
+  displayDownloadButton?: boolean,
+  displayLoadButton?: boolean
 }
 
-const {
-  flowpipeJson,
-  flowpipeNodes = [],
-  saveHandler,
-} = defineProps<FlowpipeProps>()
+const { nodeLibrary = [], graph = undefined, saveHandler, runHandler } = defineProps<FlowPipeEditorProps>()
+
+provideFlowpipeEditor(nodeLibrary, graph)
 </script>

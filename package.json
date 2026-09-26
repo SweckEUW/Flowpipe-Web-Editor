@@ -8,8 +8,10 @@
   ],
   "main": "./dist/flowpipe-web-editor.umd.cjs",
   "module": "./dist/flowpipe-web-editor.js",
-  "exports": { 
+  "types": "./dist/index.d.ts",
+  "exports": {
     ".": {
+      "types": "./dist/index.d.ts",
       "import": "./dist/flowpipe-web-editor.js",
       "require": "./dist/flowpipe-web-editor.umd.cjs"
     }
@@ -41,6 +43,7 @@
     "typescript": "~6.0.2",
     "vite": "^8.0.12",
     "vite-plugin-css-injected-by-js": "^5.0.2",
+    "vite-plugin-dts": "^5.1.1",
     "vue-tsc": "^3.2.8"
   }
 }

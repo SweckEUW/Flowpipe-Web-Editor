@@ -1,74 +1,92 @@
-import { INodeState } from "@baklavajs/core/dist/node";
+// Mirrors flowpipe's JSON serialization (Graph.to_json / INode.to_json).
 
-// Sub-plug representing compound or nested inputs/outputs
-export interface FlowpipeSubPlug<T = any> {
-  name: string;
-  value: T | null;
-  connections: Record<string, string>; // Maps upstream node identifier -> plug name
+export interface SerializedSubInputPlug {
+  name: string; // full name "<parent>.<key>"
+  value: unknown;
+  connections: Record<string, string>; // max. 1 entry: upstream identifier -> output name
 }
 
-// Input plug serialized format
-export interface FlowpipeInputPlug<T = any> {
+export interface SerializedSubOutputPlug {
   name: string;
-  value: T | null;
-  // Flowpipe inputs map: { [upstreamNodeIdentifier]: upstreamPlugName }
-  connections: Record<string, string>;
-  sub_plugs?: Record<string, FlowpipeSubPlug<T>>;
-}
-
-// Output plug serialized format
-export interface FlowpipeOutputPlug<T = any> {
-  name: string;
-  value: T | null;
-  // Flowpipe outputs map: { [downstreamNodeIdentifier]: string[] of downstream plug names }
+  value: unknown;
   connections: Record<string, string[]>;
-  sub_plugs?: Record<string, FlowpipeSubPlug<T>>;
 }
 
-// Metadata for nodes instantiated via @Node function decorator
-export interface FlowpipeFunctionMeta {
+export interface SerializedInputPlug {
+  name: string;
+  value: unknown; // null if the plug has sub_plugs
+  connections: Record<string, string>; // max. 1 entry; name may be "<out>.<key>"
+  sub_plugs: Record<string, SerializedSubInputPlug>; // keyed by "<key>", required by from_json
+}
+
+export interface SerializedOutputPlug {
+  name: string;
+  value: unknown;
+  connections: Record<string, string[]>;
+  sub_plugs: Record<string, SerializedSubOutputPlug>;
+}
+
+export interface SerializedFlowpipeFunctionMeta {
   module: string;
   name: string;
 }
 
-// Core serialized Flowpipe Node
-export interface FlowpipeNode {
+export type FlowpipeInterpreter =
+  | "python"
+  | "maya"
+  | "houdini"
+  | "nuke"
+  | "mari"
+  | "3dequalizer"
+  | (string & {});
+
+// Everything this editor owns lives under metadata.editor, so it cannot collide
+// with metadata keys flowpipe or a pipeline itself uses.
+export interface EditorNodeMetadata {
+  /** Baklava node id; keeps flowpipe identifiers stable across save/load cycles. */
+  id?: string;
+  /** Baklava node type key, see flowpipeNodeTypeKey(). */
+  type?: string;
+  position?: { x: number; y: number };
+}
+
+// Free-form dict in flowpipe; only these keys carry a meaning by convention.
+export interface SerializedFlowpipeNodeMetadata {
+  interpreter?: FlowpipeInterpreter; // flowpipe examples, flowpipe-editor icons
+  batch_size?: number; // farm conversion example
+  label?: string; // node title shown in the editor
+  editor?: EditorNodeMetadata; // owned by this web editor
+  [key: string]: unknown;
+}
+
+interface SerializedFlowpipeNodeBase {
+  module: string;
+  cls: string;
+  file_location: string | null; // flowpipe never writes null
   name: string;
   identifier: string;
-  cls: string;
-  module: string;
-  file_location: string | null;
-  inputs: Record<string, FlowpipeInputPlug>;
-  outputs: Record<string, FlowpipeOutputPlug>;
-  metadata: {
-    // UI layout for BaklavaJS
-    position?: { x: number; y: number };
-    category?: string;
-    label?: string;
-    // Execution and farm configuration
-    interpreter?: 'python' | 'nuke' | 'maya' | 'houdini' | '3dequalizer' | string;
-    batch_size?: number;
-    [key: string]: any;
-  };
-  func?: FlowpipeFunctionMeta;
+  inputs: Record<string, SerializedInputPlug>;
+  outputs: Record<string, SerializedOutputPlug>;
+  metadata: SerializedFlowpipeNodeMetadata;
 }
 
-// Complete serialized Flowpipe Graph
-export interface FlowpipeGraph {
+export interface SerializedFunctionNode extends SerializedFlowpipeNodeBase {
+  func: SerializedFlowpipeFunctionMeta; // module/cls are usually flowpipe.node / FunctionNode
+}
+
+export interface SerializedClassNode extends SerializedFlowpipeNodeBase {
+  func?: never;
+}
+
+export type SerializedFlowpipeNode = SerializedFunctionNode | SerializedClassNode;
+
+export interface SerializedFlowpipeSubgraph {
+  module: string;
+  cls: string;
   name: string;
-  cls: string;
-  module: string;
-  nodes: FlowpipeNode[];
-  subgraphs?: FlowpipeGraph[];
+  nodes: SerializedFlowpipeNode[];
 }
 
-export interface VexsBaklavaNodeState extends INodeState<any, any> {
-  position?: { x: number; y: number };
-  flowpipe: {
-    cls: string;
-    module: string;
-    file_location: string | null;
-    func?: { module: string; name: string };
-    metadata: Record<string, any>;
-  };
+export interface SerializedFlowpipeGraph extends SerializedFlowpipeSubgraph {
+  subgraphs?: SerializedFlowpipeSubgraph[]; // only on the top level
 }
