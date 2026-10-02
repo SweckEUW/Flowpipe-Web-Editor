@@ -30,7 +30,7 @@
       
       <Button
         v-if="runHandler"
-        :label="isRunning ? 'Running…' : 'Run'"
+        :label="isRunning ? 'Executing...' : 'Execute'"
         :icon="isRunning ? 'pi pi-spin pi-spinner' : 'pi pi-play'"
         severity="primary"
         outlined
