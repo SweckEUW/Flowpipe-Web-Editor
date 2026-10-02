@@ -27,18 +27,9 @@ import '../style.css'
 import { provideFlowpipeEditor } from '../composables/useFlowpipeEditor';
 import GraphCanvas from './GraphCanvas.vue';
 import TopBar from './TopBar.vue';   
-import { SerializedFlowpipeGraph, SerializedFlowpipeNode } from '../types/flowpipe';
+import type { FlowPipeEditorProps } from '../types/editor';
 // import RightSidebar from './RightSidebar.vue'
 // import NodeSearchDialog from './NodeSearchDialog.vue'
-
-export interface FlowPipeEditorProps {
-  nodeLibrary?: SerializedFlowpipeNode[]
-  graph?: SerializedFlowpipeGraph
-  saveHandler?: (graph: SerializedFlowpipeGraph) => Promise<void> | void
-  runHandler?: (graph: SerializedFlowpipeGraph) => Promise<void> | void
-  displayDownloadButton?: boolean
-  displayLoadButton?: boolean
-}
 
 const { nodeLibrary = [], graph = undefined, saveHandler, runHandler } = defineProps<FlowPipeEditorProps>()
 

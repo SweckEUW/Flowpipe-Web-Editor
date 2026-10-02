@@ -1,43 +1,196 @@
 # Flowpipe Web Editor
 
+[![npm](https://img.shields.io/npm/v/flowpipe-web-editor)](https://www.npmjs.com/package/flowpipe-web-editor)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+
+### [Live Demo →](https://sweckeuw.github.io/Flowpipe-Web-Editor/)
+
 ![Flowpipe Web Editor](docs/img/flowpipe-editor.png)
 
-A browser-based visual pipeline editor for [Flowpipe](https://github.com/PaulSchweizer/flowpipe). Build, inspect, and run data pipelines by connecting nodes on a canvas. The editor communicates with a local Flowpipe backend for pipeline execution.
+A browser-based visual node editor for [Flowpipe](https://github.com/PaulSchweizer/flowpipe) graphs. Build pipelines by connecting nodes on a canvas and export them in Flowpipe's JSON format. The editor is backend-agnostic: saving and executing a graph is done by handlers your application provides.
 
-Built with **Vue 3**, **TypeScript**, **Baklava.js**, and **Vite**.
+Built with **Vue 3**, **TypeScript**, **Baklava.js**, and **Vite**. Shipped as the framework-independent custom element `<flowpipe-editor>`.
+
+[Features](#features) · [Installation](#installation) · [Usage](#usage) · [API](#api) · [Controls](#controls) · [Known limitations](#known-limitations) · [Development](#development) · [License](#license)
 
 ---
 
 ## Features
 
-- Visual node-graph canvas for composing pipelines
-- Multi-tab support — work on several graphs simultaneously
-- Load and save pipelines as JSON
-- Right-hand sidebar for inspecting and editing node properties
-- Node search dialog (press `Tab`) to quickly insert nodes
-- One-click pipeline execution via a connected backend
+- Visual node-graph canvas — add nodes from the node palette and connect outputs to inputs
+- Toolbar with undo / redo, copy / paste, box select and zoom to fit
+- Node library defined as serialized Flowpipe nodes — input widgets are derived from the default values
+- Open an existing Flowpipe graph in the editor
+- Graphs are exported in Flowpipe's JSON serialization format and can be loaded with `Graph.from_json()`
+- **Save** and **Execute** buttons that pass the graph to your own handlers
+- Download the graph as a `.json` file
+- Works in any app — plain JavaScript, Vue, React or any other framework
 
 ---
 
-## Prerequisites
+## Requirements
 
-| Tool | Minimum version |
-|------|----------------|
-| [Node.js](https://nodejs.org) | 18 |
-| npm | 9 |
-| Flowpipe backend | running on `http://localhost:8000` |
-
-The Flowpipe backend is only required for executing pipelines. The editor itself loads and runs without it.
+- A current browser with Custom Elements support (Chrome, Edge, Firefox, Safari)
+- For development only: Node.js `^20.19.0` or `>=22.12.0` (CI uses Node 24)
 
 ---
 
 ## Installation
 
+```sh
+npm install flowpipe-web-editor
+```
+
+The package is self-contained: Vue, Baklava.js and PrimeVue are bundled, so there are no peer dependencies to install (≈ 490 kB gzipped).
+
+---
+
+## Usage
+
+### Minimal example
+
+```ts
+import { registerFlowPipeEditor } from 'flowpipe-web-editor'
+
+// Defines the <flowpipe-editor> custom element
+registerFlowPipeEditor()
+
+const editor = document.createElement('flowpipe-editor')
+editor.style.cssText = 'display: block; height: 100vh'
+
+// Nodes the editor offers, in Flowpipe's serialization format
+editor.nodeLibrary = [
+  {
+    module: 'flowpipe.node',
+    cls: 'FunctionNode',
+    file_location: null,
+    name: 'Add',
+    identifier: 'Add-1',
+    inputs: {
+      a: { name: 'a', value: 0, connections: {}, sub_plugs: {} },
+      b: { name: 'b', value: 0, connections: {}, sub_plugs: {} }
+    },
+    outputs: {
+      result: { name: 'result', value: null, connections: {}, sub_plugs: {} }
+    },
+    metadata: { label: 'Add' },
+    func: { module: 'my_nodes', name: 'add' }
+  }
+]
+editor.runHandler = (graph) => console.log(graph)
+
+document.body.append(editor)
+```
+
+Arrays, objects and functions are set as properties, not as HTML attributes.
+
+### Vue
+
+Tell the Vue compiler that `flowpipe-editor` is a custom element and bind the props with `.prop`:
+
+```ts
+// vite.config.ts
+vue({
+  template: {
+    compilerOptions: { isCustomElement: (tag) => tag === 'flowpipe-editor' }
+  }
+})
+```
+
+```vue
+<script setup lang="ts">
+import { registerFlowPipeEditor } from 'flowpipe-web-editor'
+
+registerFlowPipeEditor()
+</script>
+
+<template>
+  <flowpipe-editor :nodeLibrary.prop="nodeLibrary" :runHandler.prop="runGraph" style="display: block; height: 100vh" />
+</template>
+```
+
+### React
+
+React 19 passes arrays, objects and functions to custom elements as properties:
+
+```tsx
+import { registerFlowPipeEditor } from 'flowpipe-web-editor'
+
+registerFlowPipeEditor()
+
+export function PipelineEditor() {
+  return <flowpipe-editor nodeLibrary={nodeLibrary} runHandler={runGraph} style={{ display: 'block', height: '100vh' }} />
+}
+```
+
+React 18 and older pass them as attributes. There, create the element with `document.createElement` as shown in the [minimal example](#minimal-example) and append it to a container `ref`.
+
+### Props
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `nodeLibrary` | `SerializedFlowpipeNode[]` | `[]` | Nodes the editor offers in the node palette. The default `value` of an input decides its widget: boolean → checkbox, number → number field, string or `null` → text field. |
+| `graph` | `SerializedFlowpipeGraph` | – | Flowpipe graph that is opened when the editor starts. Its `name`, `module` and `cls` are kept when the graph is exported. |
+| `saveHandler` | `(graph: SerializedFlowpipeGraph) => Promise<void> \| void` | – | Called with the current graph when **Save** is clicked. The button is only shown if the handler is set. |
+| `runHandler` | `(graph: SerializedFlowpipeGraph) => Promise<void> \| void` | – | Called with the current graph when **Execute** is clicked. The button is only shown if the handler is set. |
+| `displayDownloadButton` | `boolean` | `false` | Shows the **Download** button, which saves the graph as `<graph name>.json`. |
+| `displayLoadButton` | `boolean` | `false` | Shows the **Load Graph** button for selecting a `.json` file. *Work in progress.* |
+
+`nodeLibrary` and `graph` are only read when the editor is initialized, so set them before the element is added to the DOM.
+
+While a handler's promise is pending, its button shows a spinner and is disabled.
+
+---
+
+## API
+
+| Export | Kind | Description |
+|--------|------|-------------|
+| `registerFlowPipeEditor(tagName = 'flowpipe-editor')` | function | Defines the custom element. Calling it again with the same tag name does nothing. |
+| `FlowPipeEditorElement` | class | The custom element constructor, for registering it yourself with `customElements.define()`. |
+| `FlowPipeEditorHTMLElement` | type | Instance type of the element (`HTMLElement & FlowPipeEditorProps`). |
+| `FlowPipeEditorProps` | type | The [props](#props) of the element. |
+| `SerializedFlowpipeNode` | type | A node in Flowpipe's JSON format. |
+| `SerializedFlowpipeGraph` | type | A graph in Flowpipe's JSON format. |
+
+The package registers `flowpipe-editor` in TypeScript's `HTMLElementTagNameMap`, so `document.createElement('flowpipe-editor')` is fully typed.
+
+---
+
+## Controls
+
+| Action | Input |
+|--------|-------|
+| Pan | Drag on empty canvas |
+| Zoom | Mouse wheel, pinch on touch devices |
+| Fit all nodes into view | `F` |
+| Add node | Drag from the node palette onto the canvas |
+| Move node | Drag the node header |
+| Select / add to selection | Click / `Ctrl` or `Shift` + click |
+| Box select | `B`, then drag on the canvas |
+| Delete selected nodes | `Delete` |
+| Rename / delete a node | Right-click the node header or click `⋮` |
+| Connect | Drag from an output (right) to an input (left) |
+| Remove a connection | Drag it off the input and release on empty canvas |
+| Undo / Redo | `Ctrl + Z` / `Ctrl + Y` |
+| Copy / Paste | `Ctrl + C` / `Ctrl + V` |
+
+---
+
+## Known limitations
+
+- Flowpipe subgraphs are not supported: `subgraphs` of an opened graph are ignored, and Baklava subgraph nodes are skipped on export.
+- Connection types are not validated — any output can be connected to any input.
+
+---
+
+## Development
+
 **1. Clone the repository**
 
 ```sh
-git clone https://github.com/sweckeuw/Flowpipe-Web-Editor.git
-cd flowpipe-web-editor
+git clone https://github.com/SweckEUW/Flowpipe-Web-Editor.git
+cd Flowpipe-Web-Editor
 ```
 
 **2. Install dependencies**
@@ -52,123 +205,40 @@ npm install
 npm run dev
 ```
 
-The app is available at `http://localhost:5173`. The dev server automatically proxies `/api` requests to `http://localhost:8000`, so the Flowpipe backend just needs to be running — no extra configuration needed.
+This starts a local playground ([`src/main.ts`](src/main.ts), [`src/App.vue`](src/App.vue)) at `http://localhost:5173`. It is not part of the published package.
 
----
-
-## Usage
-
-### Canvas navigation
-
-| Action | Input |
-|--------|-------|
-| Pan | Middle mouse button drag — or right mouse button drag on empty canvas |
-| Zoom | Mouse wheel |
-| Fit all nodes into view | `F` |
-
-### Adding and managing nodes
-
-| Action | Input |
-|--------|-------|
-| Open node search | `Tab` |
-| Add node | Search dialog → click node name |
-| Move node | Left click + drag on node |
-| Delete selected nodes | `Delete` |
-| Node context menu (rename / delete) | Right-click on node |
-
-### Selecting nodes
-
-| Action | Input |
-|--------|-------|
-| Select single node | Left click |
-| Add to selection | `Ctrl` + click |
-| Draw selection box | `B`, then click + drag on empty canvas |
-
-### Connections
-
-| Action | Input |
-|--------|-------|
-| Connect two nodes | Drag from an output port (right side) to an input port (left side) |
-| Remove a connection | Right-click on the connection line |
-
-### Edit history
-
-| Action | Input |
-|--------|-------|
-| Undo | `Ctrl + Z` |
-| Redo | `Ctrl + Y` |
-| Copy selected nodes | `Ctrl + C` |
-| Paste nodes | `Ctrl + V` |
-
-### Toolbar (top bar)
-
-| Button | Action |
-|--------|--------|
-| Load | Open a `.json` file to restore a saved pipeline |
-| Save | Export the current graph as a `.json` file |
-| Run | Execute the pipeline via the connected Flowpipe backend |
-
-### Tabs
-
-| Action | Input |
-|--------|-------|
-| New tab | Click `+` in the tab bar |
-| Switch tab | Click on tab |
-| Rename tab | Double-click on tab name, confirm with `Enter`, cancel with `Escape` |
-| Close tab | Click `×` on tab |
-
----
-
-## Available scripts
+### Scripts
 
 | Script | Description |
 |--------|-------------|
-| `npm run dev` | Start development server with hot-module reload |
-| `npm run build` | Type-check and build the npm package to `dist/` |
+| `npm run dev` | Start the playground with hot-module reload |
+| `npm run build` | Type-check and build the package to `dist/` |
+| `npm run build:watch` | Rebuild the package on every change, e.g. to test it in another project with `npm link` |
+
+### Project structure
+
+```
+src/
+  index.ts          Package entry: custom element, registerFlowPipeEditor, exported types
+  components/       FlowPipeEditor (root), TopBar, GraphCanvas
+  composables/      useFlowpipeEditor – Baklava setup, node registration, export
+  util/             Converters between Flowpipe JSON and Baklava's graph state
+  types/            Flowpipe serialization types, editor props
+  main.ts, App.vue  Local playground (not published)
+demo/               Demo app that uses the published npm package
+.github/workflows/  publish.yml (npm release), pages.yml (demo deployment)
+```
 
 ---
 
-## Demo page
+## Acknowledgements
 
-A demo of the editor is deployed to GitHub Pages: [https://sweckeuw.github.io/Flowpipe-Web-Editor/](https://sweckeuw.github.io/Flowpipe-Web-Editor/)
-
-The demo in [`demo/`](demo/) is a standalone Vite project that uses the editor exactly like an external app would: it installs the **published npm package** (`flowpipe-web-editor@latest`, no lockfile) and embeds the `<flowpipe-editor>` custom element. It does not import anything from `src/`.
-
-The nodes it offers are defined manually in [`demo/main.ts`](demo/main.ts) as `SerializedFlowpipeNode[]`. The default `value` of an input decides its widget: boolean → checkbox, number → number field, string or `null` → text field.
-
-Run it locally (requires the package to be published):
-
-```sh
-cd demo
-npm install
-npm run dev
-```
-
-The workflow [`.github/workflows/pages.yml`](.github/workflows/pages.yml) runs after every **Publish to npm** run on `main`, waits until the new version is available on npm, builds the demo and deploys it.
-
-**Setup (one time):** In the GitHub repository go to **Settings → Pages** and set **Source** to **GitHub Actions**.
-
-For manual runs: **Actions → Deploy demo to GitHub Pages → Run workflow**.
+- [Flowpipe](https://github.com/PaulSchweizer/flowpipe) — the Python graph framework this editor is built for
+- [Baklava.js](https://github.com/newcat/baklavajs) — node editor engine and renderer
+- [PrimeVue](https://primevue.org) and [Tailwind CSS](https://tailwindcss.com) — UI components and styling
 
 ---
 
-## Publishing to npm
+## License
 
-The GitHub Actions workflow [`.github/workflows/publish.yml`](.github/workflows/publish.yml) builds the package and publishes it to the npm registry on every push to `main` — but only if the version in `package.json` is not yet published. Pushes without a version bump are skipped (the run stays green).
-
-**Setup (one time):**
-
-1. On [npmjs.com](https://www.npmjs.com) create a **Granular Access Token** with *Read and write* permission for packages (allowed to bypass 2FA for publishing).
-2. In the GitHub repository go to **Settings → Secrets and variables → Actions** and add it as secret `NPM_TOKEN`.
-
-**Releasing a new version:**
-
-```sh
-npm version patch --no-git-tag-version   # or minor / major
-git commit -am "release vX.Y.Z"
-git push                                 # on main
-```
-
-The workflow publishes the package and tags the commit with `vX.Y.Z`.
-
-For manual runs: **Actions → Publish to npm → Run workflow**.
+[MIT](LICENSE) © 2026 Simon Weck

@@ -1,7 +1,27 @@
 {
   "name": "flowpipe-web-editor",
   "private": false,
-  "version": "0.0.3",
+  "version": "0.0.4",
+  "description": "Browser-based visual node editor for Flowpipe graphs, shipped as the custom element <flowpipe-editor>",
+  "keywords": [
+    "flowpipe",
+    "node-editor",
+    "visual-programming",
+    "pipeline",
+    "web-component",
+    "custom-element",
+    "baklavajs"
+  ],
+  "license": "MIT",
+  "author": "Simon Weck",
+  "homepage": "https://sweckeuw.github.io/Flowpipe-Web-Editor/",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/SweckEUW/Flowpipe-Web-Editor.git"
+  },
+  "bugs": {
+    "url": "https://github.com/SweckEUW/Flowpipe-Web-Editor/issues"
+  },
   "type": "module",
   "files": [
     "dist"
@@ -21,29 +41,25 @@
     "build": "vue-tsc -b && vite build",
     "build:watch": "vite build --watch"
   },
-  "dependencies": {
+  "devDependencies": {
     "@baklavajs/core": "^2.8.1",
     "@baklavajs/engine": "^2.8.1",
     "@baklavajs/interface-types": "^2.8.1",
     "@baklavajs/renderer-vue": "^2.8.1",
     "@baklavajs/themes": "^2.8.1",
     "@primevue/themes": "^4.5.4",
-    "primeicons": "^7.0.0",
-    "primevue": "^4.5.5"
-  },
-  "peerDependencies": {
-    "vue": "^3.5.34"
-  },
-  "devDependencies": {
     "@tailwindcss/vite": "^4.3.3",
     "@types/node": "^24.12.3",
     "@vitejs/plugin-vue": "^6.0.6",
     "@vue/tsconfig": "^0.9.1",
+    "primeicons": "^7.0.0",
+    "primevue": "^4.5.5",
     "tailwindcss": "^4.3.3",
     "typescript": "~6.0.2",
     "vite": "^8.0.12",
     "vite-plugin-css-injected-by-js": "^5.0.2",
     "vite-plugin-dts": "^5.1.1",
+    "vue": "^3.5.34",
     "vue-tsc": "^3.2.8"
   }
 }

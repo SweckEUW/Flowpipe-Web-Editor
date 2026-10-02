@@ -8,8 +8,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "flowpipe-web-editor": "latest",
-    "vue": "^3.5.34"
+    "flowpipe-web-editor": "latest"
   },
   "devDependencies": {
     "typescript": "~6.0.2",
