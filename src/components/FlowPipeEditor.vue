@@ -20,19 +20,23 @@
 </template>
 
 <script setup lang="ts">
-import { SerializedFlowpipeGraph, SerializedFlowpipeNode } from '../types/flowpipe';
+import '@baklavajs/themes/dist/syrup-dark.css'
+import 'primeicons/primeicons.css'
+import '../style.css'
+
 import { provideFlowpipeEditor } from '../composables/useFlowpipeEditor';
 import GraphCanvas from './GraphCanvas.vue';
 import TopBar from './TopBar.vue';   
+import { SerializedFlowpipeGraph, SerializedFlowpipeNode } from '../types/flowpipe';
 // import RightSidebar from './RightSidebar.vue'
 // import NodeSearchDialog from './NodeSearchDialog.vue'
 
-interface FlowPipeEditorProps {
+export interface FlowPipeEditorProps {
   nodeLibrary?: SerializedFlowpipeNode[]
   graph?: SerializedFlowpipeGraph
-  saveHandler?: (graph: SerializedFlowpipeGraph) => Promise<void> | void,
-  runHandler?: (graph: SerializedFlowpipeGraph) => Promise<void> | void,
-  displayDownloadButton?: boolean,
+  saveHandler?: (graph: SerializedFlowpipeGraph) => Promise<void> | void
+  runHandler?: (graph: SerializedFlowpipeGraph) => Promise<void> | void
+  displayDownloadButton?: boolean
   displayLoadButton?: boolean
 }
 

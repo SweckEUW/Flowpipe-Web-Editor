@@ -1,5 +1,3 @@
-// Mirrors flowpipe's JSON serialization (Graph.to_json / INode.to_json).
-
 export interface SerializedSubInputPlug {
   name: string; // full name "<parent>.<key>"
   value: unknown;

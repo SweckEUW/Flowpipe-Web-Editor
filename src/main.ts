@@ -2,9 +2,6 @@
 import { createApp } from 'vue'
 import PrimeVue from 'primevue/config'
 import Aura from '@primevue/themes/aura'
-import 'primeicons/primeicons.css'
-import '@baklavajs/themes/dist/syrup-dark.css'
-import './style.css'
 
 import App from './App.vue'
 

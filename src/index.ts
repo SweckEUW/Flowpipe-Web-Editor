@@ -1,33 +1,28 @@
-import '@baklavajs/themes/dist/syrup-dark.css'
-import 'primeicons/primeicons.css'
-import './style.css'
-
-import FlowPipeEditor from './components/FlowPipeEditor.vue'
+import { defineCustomElement } from 'vue'
 import PrimeVue from 'primevue/config'
 import Aura from '@primevue/themes/aura'
-import type { App } from 'vue'
+import FlowPipeEditor from './components/FlowPipeEditor.vue'
 
-// Vue plugin setup
-const FlowpipeEditorPlugin = {
-  install(app: App) {
-    if (!app) return
-
-    // Init PrimeVue
+export const FlowPipeEditorElement = defineCustomElement(FlowPipeEditor, {
+  shadowRoot: false,
+  configureApp(app) {
     app.use(PrimeVue, {
-      theme: {
-        preset: Aura
-      }
+      theme: { preset: Aura }
     })
+  }
+})
 
-    // Register component
-    app.component('FlowPipeEditor', FlowPipeEditor)
-  } 
+export function registerFlowPipeEditor(tagName = 'flowpipe-editor') {
+  if (!customElements.get(tagName)) {
+    customElements.define(tagName, FlowPipeEditorElement)
+  }
 }
 
-// Export specific modules
-export { FlowPipeEditor, FlowpipeEditorPlugin }
-export { useFlowpipeEditor } from './composables/useFlowpipeEditor'
-
-export type { FlowpipeEditorContext } from './composables/useFlowpipeEditor'
-
+// Typen bleiben nützlich für TS-Konsumenten (React/Angular)
 export type { SerializedFlowpipeNode, SerializedFlowpipeGraph } from './types/flowpipe'
+
+declare global {
+  interface HTMLElementTagNameMap {
+    'flowpipe-editor': InstanceType<typeof FlowPipeEditorElement>
+  }
+}

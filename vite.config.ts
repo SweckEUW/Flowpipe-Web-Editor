@@ -22,6 +22,7 @@ export default defineConfig({
     lib: {
       entry: 'src/index.ts',
       name: 'FlowpipeWebEditor',
+      formats: ['es', 'umd'],
       fileName: 'flowpipe-web-editor'
     },
     rollupOptions: {
