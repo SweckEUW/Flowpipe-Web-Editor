@@ -124,28 +124,51 @@ The app is available at `http://localhost:5173`. The dev server automatically pr
 | Script | Description |
 |--------|-------------|
 | `npm run dev` | Start development server with hot-module reload |
-| `npm run build` | Type-check and build optimized production bundle to `dist/` |
-| `npm run preview` | Preview the production build locally |
+| `npm run build` | Type-check and build the npm package to `dist/` |
 
 ---
 
-## Node registry
+## Demo page
 
-The available node types are defined in [`public/node-registry.json`](public/node-registry.json). This file is loaded at runtime and determines which nodes appear in the search dialog. Update it to reflect the steps exposed by your backend.
+A demo of the editor is deployed to GitHub Pages: [https://sweckeuw.github.io/Flowpipe-Web-Editor/](https://sweckeuw.github.io/Flowpipe-Web-Editor/)
+
+The demo in [`demo/`](demo/) is a standalone Vite project that uses the editor exactly like an external app would: it installs the **published npm package** (`flowpipe-web-editor@latest`, no lockfile) and embeds the `<flowpipe-editor>` custom element. It does not import anything from `src/`.
+
+The nodes it offers are defined manually in [`demo/main.ts`](demo/main.ts) as `SerializedFlowpipeNode[]`. The default `value` of an input decides its widget: boolean → checkbox, number → number field, string or `null` → text field.
+
+Run it locally (requires the package to be published):
+
+```sh
+cd demo
+npm install
+npm run dev
+```
+
+The workflow [`.github/workflows/pages.yml`](.github/workflows/pages.yml) runs after every **Publish to npm** run on `main`, waits until the new version is available on npm, builds the demo and deploys it.
+
+**Setup (one time):** In the GitHub repository go to **Settings → Pages** and set **Source** to **GitHub Actions**.
+
+For manual runs: **Actions → Deploy demo to GitHub Pages → Run workflow**.
 
 ---
 
-## Deployment
+## Publishing to npm
 
-A GitHub Actions workflow is included that builds and deploys the editor to GitHub Pages on every push to `main`.
+The GitHub Actions workflow [`.github/workflows/publish.yml`](.github/workflows/publish.yml) builds the package and publishes it to the npm registry on every push to `main` — but only if the version in `package.json` is not yet published. Pushes without a version bump are skipped (the run stays green).
 
 **Setup (one time):**
 
-1. Push the repository to GitHub.
-2. Go to **Settings → Pages** in your repository.
-3. Set **Source** to **GitHub Actions**.
-4. Push to `main` — the workflow runs automatically.
+1. On [npmjs.com](https://www.npmjs.com) create a **Granular Access Token** with *Read and write* permission for packages (allowed to bypass 2FA for publishing).
+2. In the GitHub repository go to **Settings → Secrets and variables → Actions** and add it as secret `NPM_TOKEN`.
 
-The site will be live at [https://sweckeuw.github.io/Flowpipe-Web-Editor/](https://sweckeuw.github.io/Flowpipe-Web-Editor/).
+**Releasing a new version:**
 
-For manual runs: **Actions → Deploy to GitHub Pages → Run workflow**.
+```sh
+npm version patch --no-git-tag-version   # or minor / major
+git commit -am "release vX.Y.Z"
+git push                                 # on main
+```
+
+The workflow publishes the package and tags the commit with `vX.Y.Z`.
+
+For manual runs: **Actions → Publish to npm → Run workflow**.

@@ -1,4 +1,4 @@
-<template>
+<!-- <template>
   <Dialog
     v-model:visible="visible"
     modal
@@ -93,4 +93,4 @@ function onDialogShow() {
 .node-search-dialog :deep(.p-dialog) {
   background: #222222;
 }
-</style>
+</style> -->

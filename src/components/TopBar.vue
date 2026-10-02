@@ -1,107 +1,134 @@
 <template>
-  <header class="top-bar flex items-center gap-2 px-4 bg-surface-800 border-b border-surface-500 flex-shrink-0">
-    <div class="flex items-center gap-2 mr-4">
-      <i class="pi pi-share-alt text-accent" style="font-size: 16px" />
+  <header class="h-[50px] flex items-center gap-2 px-4 bg-surface-800 border-b border-surface-500 flex-shrink-0">
+    <div class="flex items-center gap-4 mr-4">
+      <i class="pi pi-share-alt text-accent"/>
       <span class="text-sm font-semibold text-gray-200">Flowpipe Editor</span>
     </div>
 
     <div class="flex items-center gap-2 ml-auto">
-      <Button
-        label="Load"
-        icon="pi pi-upload"
-        size="small"
-        severity="secondary"
-        @click="handleLoad"
+
+      <FileUpload 
+        v-if="displayLoadButton"
+        mode="basic" 
+        accept=".json,application/json"
+        @select="handleLoad($event)"
+        :auto="true" 
+        :chooseLabel="isLoading ? 'Loading…' : 'Load Graph'" 
+        :chooseIcon="isLoading ? 'pi pi-spin pi-spinner' : 'pi pi-upload'"
+        :chooseButtonProps="{outlined: true, severity: 'primary', disabled: isLoading}"
       />
+  
       <Button
-        label="Save"
-        icon="pi pi-download"
-        size="small"
-        severity="secondary"
+        v-if="saveHandler"
+        :label="isSaving ? 'Saving…' : 'Save'"
+        :icon="isSaving ? 'pi pi-spin pi-spinner' : 'pi pi-save'"
+        severity="primary"
+        outlined
+        :disabled="isSaving"
         @click="handleSave"
       />
+      
       <Button
-        :label="running ? 'Running…' : 'Run'"
-        :icon="running ? 'pi pi-spin pi-spinner' : 'pi pi-play'"
-        size="small"
+        v-if="runHandler"
+        :label="isRunning ? 'Executing...' : 'Execute'"
+        :icon="isRunning ? 'pi pi-spin pi-spinner' : 'pi pi-play'"
         severity="primary"
-        :disabled="running"
+        outlined
+        :disabled="isRunning"
         @click="handleRun"
       />
+
+      <Button
+        v-if="displayDownloadButton"
+        :label="isDownloading ? 'Downloading…' : 'Download'"
+        :icon="isDownloading ? 'pi pi-spin pi-spinner' : 'pi pi-download'"
+        severity="primary"
+        outlined
+        :disabled="isDownloading"
+        @click="handleDownload"
+      />
+
     </div>
   </header>
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
 import Button from 'primevue/button'
-import { useToast } from 'primevue/usetoast'
-import { useTabStore } from '../stores/tabStore'
-import { useFlowpipeSerializer } from '../composables/useFlowpipeSerializer'
+import FileUpload, { FileUploadSelectEvent } from 'primevue/fileupload'
+import { ref } from 'vue';
+import { SerializedFlowpipeGraph } from '../types/flowpipe';
+import { useFlowpipeEditor } from '../composables/useFlowpipeEditor';
 
-const tabStore = useTabStore()
-const toast = useToast()
-const { toFlowpipeJson, fromFlowpipeJson, downloadJson, loadFromFile } = useFlowpipeSerializer()
+interface TopBarProps {
+  saveHandler?: (serializedFlowpipeGraph: SerializedFlowpipeGraph) => Promise<void> | void,
+  runHandler?: (serializedFlowpipeGraph: SerializedFlowpipeGraph) => Promise<void> | void,
+  displayDownloadButton?: boolean
+  displayLoadButton?: boolean
+}
 
-const running = ref(false)
+const { saveHandler, runHandler } = defineProps<TopBarProps>()
 
-async function handleRun() {
-  const tab = tabStore.activeTab()
-  if (!tab) return
+const { toFlowpipeGraph } = useFlowpipeEditor()
 
-  const graph = toFlowpipeJson(tab.editor, tab.name)
-  running.value = true
+let isRunning = ref(false);
+let isSaving = ref(false);
+let isDownloading = ref(false);
+let isLoading = ref(false);
+
+async function handleSave() {
+  isSaving.value = true;
 
   try {
-    const res = await fetch('/api/run', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(graph),
-    })
-
-    if (!res.ok) {
-      const text = await res.text().catch(() => `HTTP ${res.status}`)
-      throw new Error(text || `HTTP ${res.status}`)
-    }
-
-    toast.add({
-      severity: 'success',
-      summary: 'Pipeline executed',
-      detail: `"${tab.name}" finished successfully.`,
-      life: 4000,
-    })
-  } catch (err) {
-    toast.add({
-      severity: 'error',
-      summary: 'Execution failed',
-      detail: err instanceof Error ? err.message : String(err),
-      life: 6000,
-    })
+    await saveHandler?.(toFlowpipeGraph());
   } finally {
-    running.value = false
+    isSaving.value = false;
   }
 }
 
-function handleSave() {
-  const tab = tabStore.activeTab()
-  if (!tab) return
-  const graph = toFlowpipeJson(tab.editor, tab.name)
-  downloadJson(graph, `${tab.name.replace(/\s+/g, '_')}.json`)
+async function handleRun() {
+  isRunning.value = true;
+
+  try {
+    await runHandler?.(toFlowpipeGraph());
+  } finally {
+    isRunning.value = false;
+  }
 }
 
-async function handleLoad() {
+async function handleDownload() {
+  isDownloading.value = true;
+
   try {
-    const data = await loadFromFile()
-    const tab = tabStore.addTab(data.name || 'Loaded Graph')
-    fromFlowpipeJson(data, tab.editor)
-  } catch (e) {
-    console.error('Load failed:', e)
+    const graph = toFlowpipeGraph();
+    const serializedGraph = JSON.stringify(graph, null, 2);
+    const blob = new Blob([serializedGraph], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${graph.name}.json`;
+    a.click();
+
+    URL.revokeObjectURL(url);
+  } finally {
+    isDownloading.value = false;
+  }
+}
+
+async function handleLoad(event: FileUploadSelectEvent) {
+  console.log("handleLoad", event);
+  const file = Array.isArray(event.files) ? event.files[0] : event.files;
+  if (!file) return;
+
+  isLoading.value = true;
+  try {
+    const content = await file.text();
+    const graph: SerializedFlowpipeGraph = JSON.parse(content);
+    console.log(graph); // graph verwenden
+  } catch (error) {
+    console.error('Error loading file:', error);
+  } finally {
+    isLoading.value = false;
   }
 }
 </script>
-
-<style scoped>
-.top-bar {
-  height: 44px;
-}
-</style>

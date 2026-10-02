@@ -1,78 +1,71 @@
 <template>
-  <div class="graph-canvas-wrapper" :class="{ hidden: !active }">
+  <div class="h-full w-full">
     <BaklavaEditor :view-model="baklava" />
   </div>
 </template>
 
 <script setup lang="ts">
-import { onMounted, onUnmounted, reactive } from 'vue'
-import { BaklavaEditor, useBaklava, setNodePosition } from '@baklavajs/renderer-vue'
-import type { Editor } from '@baklavajs/core'
-import { useNodeRegistryStore } from '../stores/nodeRegistryStore'
-import type { NodeTypeDefinition } from '../types/nodeRegistry'
+import { BaklavaEditor } from '@baklavajs/renderer-vue'
+import { useFlowpipeEditor } from '../composables/useFlowpipeEditor'
+ 
+const { baklava } = useFlowpipeEditor() 
+// baklava.settings.palette.enabled = false
+// baklava.settings.sidebar.enabled = false
+// baklava.settings.toolbar.enabled = false
+// baklava.settings.enableMinimap = true
+// baklava.settings.displayValueOnHover = true
 
-const props = defineProps<{
-  editor: Editor
-  active: boolean
-}>()
+// TODO: Check if the connections between the nodes are valid. If not, remove them.
+// Belongs into useFlowpipeEditor() next to the node type registration.
+// baklava.editor.graphEvents.checkConnection.subscribe("typeValidator", (data) => {
+//   const fromType = (data.from as any).dataType;
+//   const toType = (data.to as any).dataType;
 
-const emit = defineEmits<{
-  openSearch: []
-}>()
+//   // Allow wildcards or untyped interfaces
+//   if (!fromType || !toType || fromType === "any" || toType === "any") return;
 
-const registry = useNodeRegistryStore()
-const baklava = useBaklava(props.editor)
+//   // Block connection if types do not match
+//   if (fromType !== toType) data.preventDefault();
+// }); 
 
-baklava.settings.palette.enabled = false
-baklava.settings.sidebar.enabled = false
-baklava.settings.toolbar.enabled = false
-baklava.settings.enableMinimap = true
-baklava.settings.displayValueOnHover = true
+// const emit = defineEmits<{
+//   openSearch: []
+// }>()
 
-function insertNode(def: NodeTypeDefinition) {
-  if (!baklava.displayedGraph) return
-  const cls = registry.nodeClasses.get(def.type)
-  if (!cls) return
-  // Add through the reactive proxy so Vue invalidates dragMoves computed in the Editor.
-  // Cast required: reactive() strips class methods from the type but the runtime object is correct.
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const node = reactive(new cls()) as any
-  baklava.displayedGraph.addNode(node)
-  setNodePosition(node, 200, 200)
-}
+// function insertNode(def: NodeTypeDefinition) {
+//   if (!baklava.displayedGraph) return
+//   const cls = registry.nodeClasses.get(def.type)
+//   if (!cls) return
+//   const node = reactive(new cls()) as any
+//   baklava.displayedGraph.addNode(node)
+//   setNodePosition(node, 200, 200)
+// }
 
-function onKeyDown(e: KeyboardEvent) {
-  if (!props.active) return
-  if (e.key === 'Tab' && !e.ctrlKey && !e.altKey && !e.metaKey) {
-    e.preventDefault()
-    emit('openSearch')
-  }
-}
+// function onKeyDown(e: KeyboardEvent) {
+//   if (!props.active) return
+//   if (e.key === 'Tab' && !e.ctrlKey && !e.altKey && !e.metaKey) {
+//     e.preventDefault()
+//     emit('openSearch')
+//   }
+// }
 
-onMounted(() => {
-  window.addEventListener('keydown', onKeyDown, true)
-})
+// onMounted(() => {
+//   window.addEventListener('keydown', onKeyDown, true)
+// })
 
-onUnmounted(() => {
-  window.removeEventListener('keydown', onKeyDown, true)
-})
+// onUnmounted(() => {
+//   window.removeEventListener('keydown', onKeyDown, true)
+// })
 
-defineExpose({ insertNode })
+// defineExpose({ insertNode })
 </script>
 
-<style scoped>
-.graph-canvas-wrapper {
-  width: 100%;
-  height: 100%;
-  position: relative;
-}
-.graph-canvas-wrapper.hidden {
-  display: none;
-}
-.graph-canvas-wrapper :deep(.baklava-editor) {
-  width: 100%;
-  height: 100%;
-  position: absolute;
-  inset: 0;
+<style>
+.baklava-editor .background {
+  background-image:
+    radial-gradient(circle, #444 1px, transparent 1.5px),
+    none,
+    radial-gradient(circle, #444 1px, transparent 1.5px),
+    none !important;
 }
 </style>
