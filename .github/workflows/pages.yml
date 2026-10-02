@@ -1,0 +1,73 @@
+name: Deploy demo to GitHub Pages
+
+on:
+  # Runs after every npm publish run on main, so the demo picks up the new version
+  workflow_run:
+    workflows: [Publish to npm]
+    types: [completed]
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: demo
+    steps:
+      # Checkout repository
+      - uses: actions/checkout@v5
+
+      # Setup Node.js
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24
+
+      # Wait until the version from package.json is the latest one on npm (publish may have just finished)
+      - name: Wait for npm release
+        run: |
+          VERSION=$(node -p "require('../package.json').version")
+          for i in $(seq 1 18); do
+            [ "$(npm view flowpipe-web-editor version 2>/dev/null)" = "$VERSION" ] && exit 0
+            echo "flowpipe-web-editor@$VERSION is not the latest version on npm yet, retrying in 10s"
+            sleep 10
+          done
+          echo "::warning::flowpipe-web-editor@$VERSION is not the latest version on npm, the demo uses the current latest version"
+
+      # Install dependencies, resolves the newest published flowpipe-web-editor (demo has no lockfile)
+      - name: Install
+        run: |
+          npm install
+          npm ls flowpipe-web-editor
+
+      # Build demo page
+      - name: Build demo
+        run: npm run build
+
+      # Upload build output as Pages artifact
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v4
+        with:
+          path: demo/dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      # Deploy artifact to GitHub Pages
+      - name: Deploy
+        id: deployment
+        uses: actions/deploy-pages@v4
