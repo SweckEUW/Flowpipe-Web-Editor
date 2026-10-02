@@ -4,7 +4,7 @@ import tailwindcss from '@tailwindcss/vite'
 import cssInjectedByJsPlugin from 'vite-plugin-css-injected-by-js'
 import dts from 'vite-plugin-dts'
 
-export default defineConfig({
+export default defineConfig(({ mode }) => ({
   plugins: [
     vue(),
     tailwindcss(),
@@ -17,6 +17,11 @@ export default defineConfig({
       cleanVueFileName: true,
     }),
   ],
+  // Vue wird mitgebundelt. Vite ersetzt process.env im Library-Mode nicht, ohne diese Zeile
+  // greift der Vue-Code zur Laufzeit auf das im Browser nicht vorhandene `process` zu.
+  define: {
+    'process.env.NODE_ENV': JSON.stringify(mode)
+  },
   build: {
     sourcemap: true,
     lib: {
@@ -26,13 +31,9 @@ export default defineConfig({
       fileName: 'flowpipe-web-editor'
     },
     rollupOptions: {
-      external: ['vue'],
       output: {
-        exports: 'named',
-        globals: {
-          vue: 'Vue'
-        }
+        exports: 'named'
       }
     }
   }
-})
+}))

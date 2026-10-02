@@ -91,6 +91,16 @@ registerFlowPipeEditor()
 
 // Arrays, objects and functions are passed as properties, not as HTML attributes
 const editor = document.createElement('flowpipe-editor')
-editor.nodeLibrary = nodeLibrary
-editor.displayDownloadButton = true
+editor.nodeLibrary = nodeLibrary;
+editor.displayDownloadButton = true;
+editor.displayLoadButton = true;
+
+// Dumm Handlers
+editor.saveHandler = async (graph) => {
+  console.log('Save graph', graph)
+}
+editor.runHandler = async (graph) => {
+  console.log('Execute graph', graph)
+}
+
 document.getElementById('app')!.append(editor)
