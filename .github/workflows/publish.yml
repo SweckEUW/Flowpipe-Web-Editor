@@ -4,6 +4,12 @@ on:
   push:
     branches: [main]
   workflow_dispatch:
+    inputs:
+      bump:
+        description: 'Version bump (patch / minor / major)'
+        type: choice
+        options: [patch, minor, major]
+        default: patch
 
 concurrency:
   group: npm-publish
@@ -11,9 +17,11 @@ concurrency:
 
 jobs:
   publish:
+    # Only publish from main (also when started manually)
+    if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     permissions:
-      contents: write # required to push the release tag
+      contents: write # push the version commit, create tag + release
     steps:
       # Checkout repository
       - uses: actions/checkout@v5
@@ -25,41 +33,65 @@ jobs:
           cache: npm
           registry-url: 'https://registry.npmjs.org'
 
-      # Check whether the version from package.json is already published
-      - name: Check version
+      # Git identity for the version commit
+      - name: Configure git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      # Determine the version to publish:
+      # - version in package.json not yet on npm -> publish it as is (manual bump wins)
+      # - version already on npm                 -> bump automatically (patch by default)
+      - name: Determine version
         id: version
+        env:
+          BUMP: ${{ inputs.bump || 'patch' }}
         run: |
           NAME=$(node -p "require('./package.json').name")
-          VERSION=$(node -p "require('./package.json').version")
-          PUBLISHED=$(npm view "$NAME@$VERSION" version 2>/dev/null || true)
-          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
-          if [ "$PUBLISHED" = "$VERSION" ]; then
-            echo "publish=false" >> "$GITHUB_OUTPUT"
-            echo "::notice::$NAME@$VERSION is already on npm - bump the version in package.json to publish"
+          CURRENT=$(node -p "require('./package.json').version")
+          PUBLISHED=$(npm view "$NAME@$CURRENT" version 2>/dev/null || true)
+
+          if [ "$PUBLISHED" = "$CURRENT" ]; then
+            npm version "$BUMP" --no-git-tag-version
+            echo "bumped=true" >> "$GITHUB_OUTPUT"
           else
-            echo "publish=true" >> "$GITHUB_OUTPUT"
+            echo "::notice::$NAME@$CURRENT is not on npm yet - publishing without bump"
+            echo "bumped=false" >> "$GITHUB_OUTPUT"
           fi
+
+          VERSION=$(node -p "require('./package.json').version")
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "::notice::Publishing $NAME@$VERSION"
 
       # Install dependencies
       - name: Install
-        if: steps.version.outputs.publish == 'true'
         run: npm ci
 
-      # Build project
+      # Build project (before committing, so a broken build doesn't bump the version)
       - name: Build
-        if: steps.version.outputs.publish == 'true'
         run: npm run build
+
+      # Push the bumped version back to main.
+      # Pushes made with GITHUB_TOKEN don't trigger new workflow runs, so there is no loop.
+      - name: Commit version bump
+        if: steps.version.outputs.bumped == 'true'
+        run: |
+          git add package.json package-lock.json
+          git commit -m "chore(release): v${{ steps.version.outputs.version }} [skip ci]"
+          git push origin HEAD:main
 
       # Publish to npm
       - name: Publish
-        if: steps.version.outputs.publish == 'true'
         run: npm publish
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
-      # Tag the published commit
-      - name: Tag release
-        if: steps.version.outputs.publish == 'true'
+      # Create tag + GitHub release for the published commit
+      - name: Create GitHub release
         run: |
-          git tag "v${{ steps.version.outputs.version }}"
-          git push origin "v${{ steps.version.outputs.version }}"
+          gh release create "v${{ steps.version.outputs.version }}" \
+            --target "$(git rev-parse HEAD)" \
+            --title "v${{ steps.version.outputs.version }}" \
+            --generate-notes
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
