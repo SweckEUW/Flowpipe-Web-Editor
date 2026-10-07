@@ -1,7 +1,7 @@
 {
   "name": "flowpipe-web-editor",
   "private": false,
-  "version": "0.0.4",
+  "version": "0.0.6",
   "description": "Browser-based visual node editor for Flowpipe graphs, shipped as the custom element <flowpipe-editor>",
   "keywords": [
     "flowpipe",
