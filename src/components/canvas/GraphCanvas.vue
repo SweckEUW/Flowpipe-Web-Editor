@@ -1,12 +1,23 @@
 <template>
   <div class="h-full w-full">
-    <BaklavaEditor :view-model="baklava" />
+    <BaklavaEditor :view-model="baklava">
+      <template #node="{ node, selected, dragging, onSelect, onStartDrag }">
+        <FlowpipeNode
+          :node="node"
+          :selected="selected"
+          :dragging="dragging"
+          @select="onSelect(undefined)"
+          @start-drag="onStartDrag"
+        />
+      </template>
+    </BaklavaEditor>
   </div>
 </template>
 
 <script setup lang="ts">
 import { BaklavaEditor } from '@baklavajs/renderer-vue'
-import { useFlowpipeEditor } from '../composables/useFlowpipeEditor'
+import { useFlowpipeEditor } from '../../composables/useFlowpipeEditor'
+import FlowpipeNode from '../node/FlowpipeNode.vue'
  
 const { baklava } = useFlowpipeEditor() 
 

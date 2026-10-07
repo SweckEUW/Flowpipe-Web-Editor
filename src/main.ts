@@ -15,7 +15,11 @@ const nodeLibrary: SerializedFlowpipeNode[] = [
     "outputs": {
       "scene": { "name": "scene", "value": null, "connections": {}, "sub_plugs": {} }
     },
-    "metadata": { "interpreter": "maya", "label": "LoadScene" },
+    "metadata": {
+      "interpreter": "maya",
+      "label": "LoadScene",
+      "editor": { "category": "Scene", "description": "Opens the Maya scene at scene_path and passes it downstream.", "icon": "https://api.iconify.design/lucide/folder-open.svg?color=%23e5e5e5" }
+    },
     "func": { "module": "demo.nodes", "name": "load_scene" }
   },
   {
@@ -33,7 +37,11 @@ const nodeLibrary: SerializedFlowpipeNode[] = [
     "outputs": {
       "images": { "name": "images", "value": null, "connections": {}, "sub_plugs": {} }
     },
-    "metadata": { "interpreter": "maya", "label": "RenderFrames" },
+    "metadata": {
+      "interpreter": "maya",
+      "label": "RenderFrames",
+      "editor": { "category": "Rendering", "description": "Renders start_frame to end_frame of the scene, optionally on the GPU.", "icon": "https://api.iconify.design/lucide/images.svg?color=%23e5e5e5" }
+    },
     "func": { "module": "demo.nodes", "name": "render_frames" }
   },
   {
@@ -49,7 +57,11 @@ const nodeLibrary: SerializedFlowpipeNode[] = [
     "outputs": {
       "denoised": { "name": "denoised", "value": null, "connections": {}, "sub_plugs": {} }
     },
-    "metadata": { "interpreter": "python", "label": "Denoise" },
+    "metadata": {
+      "interpreter": "python",
+      "label": "Denoise",
+      "editor": { "category": "Rendering", "description": "Removes render noise from the images, strength ranges from 0 to 1.", "icon": "https://api.iconify.design/lucide/sparkles.svg?color=%23e5e5e5" }
+    },
     "func": { "module": "demo.nodes", "name": "denoise" }
   },
   {
@@ -65,7 +77,11 @@ const nodeLibrary: SerializedFlowpipeNode[] = [
     "outputs": {
       "comp": { "name": "comp", "value": null, "connections": {}, "sub_plugs": {} }
     },
-    "metadata": { "interpreter": "nuke", "label": "Composite" },
+    "metadata": {
+      "interpreter": "nuke",
+      "label": "Composite",
+      "editor": { "category": "Compositing", "description": "Combines the plate with a Nuke comp template.", "icon": "https://api.iconify.design/lucide/layers.svg?color=%23e5e5e5" }
+    },
     "func": { "module": "demo.nodes", "name": "composite" }
   },
   {
@@ -82,7 +98,11 @@ const nodeLibrary: SerializedFlowpipeNode[] = [
     "outputs": {
       "version": { "name": "version", "value": null, "connections": {}, "sub_plugs": {} }
     },
-    "metadata": { "interpreter": "python", "label": "Publish" },
+    "metadata": {
+      "interpreter": "python",
+      "label": "Publish",
+      "editor": { "category": "Pipeline", "description": "Publishes the comp as a new version and optionally notifies the team.", "icon": "https://api.iconify.design/lucide/upload.svg?color=%23e5e5e5" }
+    },
     "func": { "module": "demo.nodes", "name": "publish" }
   }
 ]

@@ -48,8 +48,8 @@
 import { ref, computed } from 'vue'
 import Dialog from 'primevue/dialog'
 import InputText from 'primevue/inputtext'
-import { useNodeRegistryStore } from '../stores/nodeRegistryStore'
-import type { NodeTypeDefinition } from '../types/nodeRegistry'
+import { useNodeRegistryStore } from '../../stores/nodeRegistryStore'
+import type { NodeTypeDefinition } from '../../types/nodeRegistry'
 
 const visible = defineModel<boolean>('visible', { default: false })
 

@@ -25,11 +25,11 @@ import 'primeicons/primeicons.css'
 import '../style.css'
 
 import { provideFlowpipeEditor } from '../composables/useFlowpipeEditor';
-import GraphCanvas from './GraphCanvas.vue';
+import GraphCanvas from './canvas/GraphCanvas.vue';
 import TopBar from './TopBar.vue';   
 import type { FlowPipeEditorProps } from '../types/editor';
 // import RightSidebar from './RightSidebar.vue'
-// import NodeSearchDialog from './NodeSearchDialog.vue'
+// import NodeSearchDialog from './canvas/NodeSearchDialog.vue'
 
 const { nodeLibrary = [], graph = undefined, saveHandler, runHandler } = defineProps<FlowPipeEditorProps>()
 

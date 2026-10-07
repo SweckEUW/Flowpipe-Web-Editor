@@ -95,6 +95,8 @@ interface LoadableNodeState {
     outputs: Record<string, LoadableInterfaceState>;
     position: { x: number; y: number; };
     width?: number;
+    /** Read by useFlowpipeEditor's node hooks */
+    color?: string;
 }
 
 interface LoadableInterfaceState {
@@ -205,11 +207,9 @@ export function flowpipeGraphToBaklava(
             title: node.name,
             inputs,
             outputs,
-            // Copied, not referenced: renderer-vue mutates node.position while dragging.
-            // A frozen, readonly or foreign-reactive object from the graph prop would
-            // either throw, ignore the write or never re-render.
             position: { x: position?.x ?? 0, y: position?.y ?? 0 },
             width: node.metadata?.editor?.width,
+            color: node.metadata?.editor?.color,
         });
 
         byIdentifier.set(node.identifier, { nodeId, name: node.name, inputInterfaces, outputInterfaces });

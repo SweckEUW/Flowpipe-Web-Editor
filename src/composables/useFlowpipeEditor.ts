@@ -13,16 +13,41 @@ export interface FlowpipeEditorContext {
 
 const FlowpipeEditorKey: InjectionKey<FlowpipeEditorContext> = Symbol("flowpipe-editor");
 
+// Same pattern renderer-vue uses for position and width: an editor-only node property.
+declare module "@baklavajs/core/dist/node" {
+  interface AbstractNode {
+    /** Header color, see EditorNodeMetadata.color */
+    color?: string;
+  }
+}
+
 export function provideFlowpipeEditor(nodeLibrary: SerializedFlowpipeNode[], graph?: SerializedFlowpipeGraph): FlowpipeEditorContext {
   const baklava = useBaklava();
   // Width only: Baklava derives a node's height from its interfaces.
   baklava.settings.nodes.resizable = true;
   baklava.settings.nodes.maxWidth = 600;
+  baklava.settings.toolbar.enabled = false;
+  // baklava.settings.sidebar.enabled = false;
+
+  // Baklava only saves the node properties it knows, so the color is carried through
+  // these hooks. They run for graph loads as well as for copy, paste and duplicate.
+  const token = Symbol("flowpipe-node-color");
+  baklava.editor.nodeHooks.beforeLoad.subscribe(token, (state, node) => {
+    node.color = (state as { color?: string }).color;
+    return state;
+  });
+  baklava.editor.nodeHooks.afterSave.subscribe(token, (state, node) => {
+    if (node.color) (state as { color?: string }).color = node.color;
+    return state;
+  });
 
   // Register all node types in the library with Baklava
   for (const node of nodeLibrary) {
     const definition = flowpipeNodeToBaklava(node);
-    baklava.editor.registerNodeType(defineNode(definition));
+    // The category is a registration option in Baklava, not part of the node definition
+    baklava.editor.registerNodeType(defineNode(definition), {
+      category: node.metadata?.editor?.category || "Uncategorized",
+    });
   }
 
   const loadInitialGraph = () => {
