@@ -141,6 +141,22 @@ React 18 and older pass them as attributes. There, create the element with `docu
 
 While a handler's promise is pending, its button shows a spinner and is disabled.
 
+### Slots
+
+| Slot | Default | Description |
+|------|---------|-------------|
+| `title` | Icon and "Flowpipe Editor" | Content on the left of the top bar. |
+
+Pass the content as a child of the element with a `slot` attribute:
+
+```html
+<flowpipe-editor>
+  <span slot="title">My Project</span>
+</flowpipe-editor>
+```
+
+Slot content is only read when the element is added to the DOM, so append the children before that.
+
 ---
 
 ## API

@@ -129,4 +129,11 @@ editor.runHandler = async (graph) => {
   console.log('Execute graph', graph)
 }
 
+// Replaces the default content on the left of the top bar, must be added before the element is mounted
+const title = document.createElement('span')
+title.slot = 'title'
+title.className = 'text-sm font-semibold text-gray-200'
+title.textContent = 'Flowpipe Demo'
+editor.append(title)
+
 document.getElementById('app')!.append(editor)

@@ -1,8 +1,7 @@
 <template>
   <header class="h-[50px] flex items-center gap-2 px-4 bg-surface-800 border-b border-surface-500 flex-shrink-0">
     <div class="flex items-center gap-4 mr-4">
-      <i class="pi pi-share-alt text-accent"/>
-      <span class="text-sm font-semibold text-gray-200">Flowpipe Editor</span>
+      <slot name="title" />
     </div>
 
     <div class="flex items-center gap-2 ml-auto">
