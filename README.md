@@ -17,7 +17,10 @@ Built with **Vue 3**, **TypeScript**, **Baklava.js**, and **Vite**. Shipped as t
 
 ## Features
 
-- Visual node-graph canvas — add nodes from the node palette and connect outputs to inputs
+- Visual node-graph canvas — add nodes and connect outputs to inputs
+- Node sidebar — nodes grouped by category with icon and description, searchable, added by drag & drop or click
+- Node search — press `Tab` over the canvas to search nodes and add one at the mouse position with `Enter`, like in Nuke
+- Inspector sidebar — rename the selected node, edit its inputs and remove it; shows the graph info when no node is selected
 - Toolbar with undo / redo, copy / paste, box select and zoom to fit
 - Node library defined as serialized Flowpipe nodes — input widgets are derived from the default values
 - Open an existing Flowpipe graph in the editor
@@ -129,16 +132,34 @@ React 18 and older pass them as attributes. There, create the element with `docu
 
 | Prop | Type | Default | Description |
 |------|------|---------|-------------|
-| `nodeLibrary` | `SerializedFlowpipeNode[]` | `[]` | Nodes the editor offers in the node palette. The default `value` of an input decides its widget: boolean → checkbox, number → number field, string or `null` → text field. |
+| `nodeLibrary` | `SerializedFlowpipeNode[]` | `[]` | Nodes the editor offers in the node sidebar, grouped by `metadata.editor.category`. The default `value` of an input decides its widget: boolean → checkbox, number → number field, string or `null` → text field. |
 | `graph` | `SerializedFlowpipeGraph` | – | Flowpipe graph that is opened when the editor starts. Its `name`, `module` and `cls` are kept when the graph is exported. |
 | `saveHandler` | `(graph: SerializedFlowpipeGraph) => Promise<void> \| void` | – | Called with the current graph when **Save** is clicked. The button is only shown if the handler is set. |
 | `runHandler` | `(graph: SerializedFlowpipeGraph) => Promise<void> \| void` | – | Called with the current graph when **Execute** is clicked. The button is only shown if the handler is set. |
 | `displayDownloadButton` | `boolean` | `false` | Shows the **Download** button, which saves the graph as `<graph name>.json`. |
 | `displayLoadButton` | `boolean` | `false` | Shows the **Load Graph** button for selecting a `.json` file. *Work in progress.* |
+| `disableSidebar` | `boolean` | `false` | Hides the node sidebar on the left, from which nodes are dragged onto the canvas. |
+| `disableInspector` | `boolean` | `false` | Hides the inspector sidebar on the right. It shows the graph info when no node is selected, and the name, inputs and a remove button of the selected node. |
 
 `nodeLibrary` and `graph` are only read when the editor is initialized, so set them before the element is added to the DOM.
 
 While a handler's promise is pending, its button shows a spinner and is disabled.
+
+### Slots
+
+| Slot | Default | Description |
+|------|---------|-------------|
+| `title` | Icon and "Flowpipe Editor" | Content on the left of the top bar. |
+
+Pass the content as a child of the element with a `slot` attribute:
+
+```html
+<flowpipe-editor>
+  <span slot="title">My Project</span>
+</flowpipe-editor>
+```
+
+Slot content is only read when the element is added to the DOM, so append the children before that.
 
 ---
 
@@ -164,7 +185,8 @@ The package registers `flowpipe-editor` in TypeScript's `HTMLElementTagNameMap`,
 | Pan | Drag on empty canvas |
 | Zoom | Mouse wheel, pinch on touch devices |
 | Fit all nodes into view | `F` |
-| Add node | Drag from the node palette onto the canvas |
+| Add node | Drag from the node sidebar onto the canvas, or click it to add it in the center |
+| Search and add node | `Tab` over the canvas, type, `↑` / `↓` to pick, `Enter` to add at the mouse position; `Tab` or `Esc` closes |
 | Move node | Drag the node header |
 | Select / add to selection | Click / `Ctrl` or `Shift` + click |
 | Box select | `B`, then drag on the canvas |
@@ -220,7 +242,7 @@ This starts a local playground ([`src/main.ts`](src/main.ts)) with demo nodes an
 ```
 src/
   index.ts          Package entry: custom element, registerFlowPipeEditor, exported types
-  components/       FlowPipeEditor (root), TopBar, GraphCanvas
+  components/       FlowPipeEditor (root), TopBar, GraphCanvas, NodeSearchDialog, node sidebar and inspector
   composables/      useFlowpipeEditor – Baklava setup, node registration, export
   util/             Converters between Flowpipe JSON and Baklava's graph state
   types/            Flowpipe serialization types, editor props

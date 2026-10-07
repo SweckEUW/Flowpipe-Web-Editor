@@ -1,21 +1,24 @@
 <template>
   <div class="w-full h-full flex flex-col bg-surface-800">
-    <TopBar :saveHandler="saveHandler" :runHandler="runHandler" :displayDownloadButton="displayDownloadButton" :displayLoadButton="displayLoadButton" />
-    <!-- <TabBar /> -->
+
+    <TopBar :saveHandler="saveHandler" :runHandler="runHandler" :displayDownloadButton="displayDownloadButton" :displayLoadButton="displayLoadButton">
+      <template #title>
+        <slot name="title">
+          <i class="pi pi-share-alt text-accent"/>
+          <span class="text-sm font-semibold text-gray-200">Flowpipe Editor</span>
+        </slot>
+      </template>
+    </TopBar>
 
     <div class="canvas-area flex flex-1 overflow-hidden">
+      <NodeSidebar v-if="!disableSidebar" />
+
       <div class="flex-1 relative overflow-hidden">
         <GraphCanvas />
-      </div>  
+      </div>
 
-      <!-- <RightSidebar /> -->
+      <InspectorSidebar v-if="!disableInspector" />
     </div>
-
-    
-    <!-- <NodeSearchDialog
-      v-model:visible="searchVisible"
-      @insert-node="handleInsertNode"
-    /> -->
   </div>
 </template>
 
@@ -25,13 +28,13 @@ import 'primeicons/primeicons.css'
 import '../style.css'
 
 import { provideFlowpipeEditor } from '../composables/useFlowpipeEditor';
-import GraphCanvas from './GraphCanvas.vue';
-import TopBar from './TopBar.vue';   
+import GraphCanvas from './canvas/GraphCanvas.vue';
+import TopBar from './TopBar.vue';
+import NodeSidebar from './sidebar/NodeSidebar.vue';
+import InspectorSidebar from './sidebar/InspectorSidebar.vue';
 import type { FlowPipeEditorProps } from '../types/editor';
-// import RightSidebar from './RightSidebar.vue'
-// import NodeSearchDialog from './NodeSearchDialog.vue'
 
-const { nodeLibrary = [], graph = undefined, saveHandler, runHandler } = defineProps<FlowPipeEditorProps>()
+const { nodeLibrary = [], graph = undefined, saveHandler, runHandler, disableSidebar = false, disableInspector = false } = defineProps<FlowPipeEditorProps>()
 
 provideFlowpipeEditor(nodeLibrary, graph)
 </script>

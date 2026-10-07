@@ -9,4 +9,6 @@ export interface FlowPipeEditorProps {
   runHandler?: (graph: SerializedFlowpipeGraph) => Promise<void> | void
   displayDownloadButton?: boolean
   displayLoadButton?: boolean
+  disableSidebar?: boolean
+  disableInspector?: boolean
 }

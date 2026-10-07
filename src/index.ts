@@ -1,6 +1,7 @@
 import { defineCustomElement } from 'vue'
 import PrimeVue from 'primevue/config'
 import Aura from '@primevue/themes/aura'
+import Tooltip from 'primevue/tooltip'
 import FlowPipeEditor from './components/FlowPipeEditor.vue'
 import type { FlowPipeEditorProps } from './types/editor'
 
@@ -12,8 +13,11 @@ export const FlowPipeEditorElement: { new (): FlowPipeEditorHTMLElement } = defi
   shadowRoot: false,
   configureApp(app) {
     app.use(PrimeVue, {
-      theme: { preset: Aura }
+      // Dark mode follows the "dark" class on <html> instead of the OS setting,
+      // otherwise menus and popovers turn light on a light system theme
+      theme: { preset: Aura, options: { darkModeSelector: '.dark' } }
     })
+    app.directive('tooltip', Tooltip)
   }
 })
 

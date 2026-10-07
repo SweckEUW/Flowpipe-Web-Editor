@@ -35,6 +35,8 @@ interface SavedNodeState {
     outputs: Record<string, { id: string; value: unknown; }>;
     position?: { x: number; y: number; };
     width?: number;
+    /** Added by useFlowpipeEditor's node hooks */
+    color?: string;
     /** Only on subgraph container nodes: the nested graph */
     graphState?: { nodes?: unknown[]; };
 }
@@ -189,13 +191,18 @@ export function baklavaToFlowpipeGraph(
         // Defensive: the library itself may have come out of an earlier save.
         delete metadata.type;
         delete metadata.position;
+        // category, description and icon describe the node type and are kept from the
+        // library; id, position, width and color belong to this instance and come from Baklava.
+        const { id: _id, position: _position, width: _width, color: _color, ...typeMetadata } = metadata.editor || {};
         metadata.editor = {
+            ...typeMetadata,
             // Stored so that loading this graph again reuses the same Baklava id,
             // which in turn reproduces the same identifier above.
             id: nodeState.id,
             type: nodeState.type,
             ...(nodeState.position ? { position: { ...nodeState.position } } : {}),
             ...(nodeState.width ? { width: nodeState.width } : {}),
+            ...(nodeState.color ? { color: nodeState.color } : {}),
         };
 
         const inputs: Record<string, SerializedInputPlug> = {};

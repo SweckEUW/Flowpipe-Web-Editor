@@ -41,13 +41,14 @@ export type FlowpipeInterpreter =
 // Everything this editor owns lives under metadata.editor, so it cannot collide
 // with metadata keys flowpipe or a pipeline itself uses.
 export interface EditorNodeMetadata {
-  /** Baklava node id; keeps flowpipe identifiers stable across save/load cycles. */
-  id?: string;
-  /** Baklava node type key, see flowpipeNodeTypeKey(). */
-  type?: string;
-  position?: { x: number; y: number };
-  /** Node width in px; missing means Baklava's default width. */
-  width?: number;
+  id?: string; // Baklava node id; keeps flowpipe identifiers stable across save/load cycles.
+  type?: string; // Baklava node type key, see flowpipeNodeTypeKey().
+  position?: { x: number; y: number }; // Node position in px; missing means Baklava's default position
+  width?: number; // Node width in px; missing means Baklava's default width
+  color?: string; // CSS color of the node header; missing means the theme default
+  category?: string; // for the palette; missing means "Uncategorized"
+  description?: string; // for the tooltip
+  icon?: string; // URL of the node icon image (absolute, relative or data URL); missing means no icon
 }
 
 // Free-form dict in flowpipe; only these keys carry a meaning by convention.
