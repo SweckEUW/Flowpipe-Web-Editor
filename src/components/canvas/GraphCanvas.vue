@@ -1,6 +1,12 @@
 <template>
-  <!-- Drop target for the NodeSidebar entries -->
-  <div ref="canvas" class="h-full w-full" @dragover="onDragOver" @drop="onDrop">
+  <div
+    ref="canvas"
+    class="relative h-full w-full"
+    @dragover="onDragOver"
+    @drop="onDrop" 
+    @pointermove="onPointerMove"
+    @pointerleave="pointerInside = false"
+  >
     <BaklavaEditor :view-model="baklava">
       <template #node="{ node, selected, dragging, onSelect, onStartDrag }">
         <FlowpipeNode
@@ -12,6 +18,8 @@
         />
       </template>
     </BaklavaEditor>
+
+    <NodeSearchDialog ref="search" />
   </div>
 </template>
 
@@ -21,14 +29,14 @@ import { BaklavaEditor } from '@baklavajs/renderer-vue'
 import { useFlowpipeEditor } from '../../composables/useFlowpipeEditor'
 import { NODE_DRAG_TYPE, useNodeActions } from '../../composables/useNodeActions'
 import FlowpipeNode from '../node/FlowpipeNode.vue'
+import NodeSearchDialog from './NodeSearchDialog.vue'
 
 const { baklava, canvasEl } = useFlowpipeEditor()
 const actions = useNodeActions()
 
 // Shared through the context, so the sidebar can place nodes in the visible area
 const canvas = useTemplateRef<HTMLDivElement>('canvas')
-onMounted(() => { canvasEl.value = canvas.value })
-onUnmounted(() => { canvasEl.value = null })
+const search = useTemplateRef<InstanceType<typeof NodeSearchDialog>>('search')
 
 // Only drags from the NodeSidebar are accepted, files or text dropped on the canvas are ignored
 function onDragOver(ev: DragEvent) {
@@ -44,49 +52,33 @@ function onDrop(ev: DragEvent) {
   actions.add(type, ev.clientX, ev.clientY)
 }
 
-// TODO: Check if the connections between the nodes are valid. If not, remove them.
-// Belongs into useFlowpipeEditor() next to the node type registration.
-// baklava.editor.graphEvents.checkConnection.subscribe("typeValidator", (data) => {
-//   const fromType = (data.from as any).dataType;
-//   const toType = (data.to as any).dataType;
+// The node search opens where the mouse is, so it has to be tracked
+let pointerX = 0
+let pointerY = 0
+let pointerInside = false
 
-//   // Allow wildcards or untyped interfaces
-//   if (!fromType || !toType || fromType === "any" || toType === "any") return;
+function onPointerMove(ev: PointerEvent) {
+  pointerX = ev.clientX
+  pointerY = ev.clientY
+  pointerInside = true
+}
 
-//   // Block connection if types do not match
-//   if (fromType !== toType) data.preventDefault();
-// }); 
+// Tab opens the search like in Nuke. Outside the canvas and in inputs Tab keeps moving the focus.
+function onKeyDown(ev: KeyboardEvent) {
+  if (ev.key !== 'Tab' || !pointerInside) return
+  ev.preventDefault()
+  search.value?.open(pointerX, pointerY)
+}
 
-// const emit = defineEmits<{
-//   openSearch: []
-// }>()
+onMounted(() => {
+  canvasEl.value = canvas.value
+  window.addEventListener('keydown', onKeyDown)
+})
 
-// function insertNode(def: NodeTypeDefinition) {
-//   if (!baklava.displayedGraph) return
-//   const cls = registry.nodeClasses.get(def.type)
-//   if (!cls) return
-//   const node = reactive(new cls()) as any
-//   baklava.displayedGraph.addNode(node)
-//   setNodePosition(node, 200, 200)
-// }
-
-// function onKeyDown(e: KeyboardEvent) {
-//   if (!props.active) return
-//   if (e.key === 'Tab' && !e.ctrlKey && !e.altKey && !e.metaKey) {
-//     e.preventDefault()
-//     emit('openSearch')
-//   }
-// }
-
-// onMounted(() => {
-//   window.addEventListener('keydown', onKeyDown, true)
-// })
-
-// onUnmounted(() => {
-//   window.removeEventListener('keydown', onKeyDown, true)
-// })
-
-// defineExpose({ insertNode })
+onUnmounted(() => {
+  canvasEl.value = null
+  window.removeEventListener('keydown', onKeyDown)
+})
 </script>
 
 <style>

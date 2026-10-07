@@ -78,17 +78,7 @@
 import { computed, ref } from 'vue'
 import { useFlowpipeEditor } from '../../composables/useFlowpipeEditor'
 import { NODE_DRAG_TYPE, useNodeActions } from '../../composables/useNodeActions'
-import { flowpipeNodeTypeKey } from '../../util/flowpipeToBaklavaConverter'
-
-const UNCATEGORIZED = 'Uncategorized'
-
-interface SidebarEntry {
-  type: string
-  label: string
-  description?: string
-  icon?: string
-  category: string
-}
+import { buildNodeEntries, UNCATEGORIZED, type NodeEntry } from '../../util/nodeEntries'
 
 const { nodeLibrary, canvasEl } = useFlowpipeEditor()
 const actions = useNodeActions()
@@ -100,23 +90,15 @@ const collapsed = ref(false)
 const toggleClass =
   'w-7 h-7 flex-shrink-0 flex items-center justify-center rounded-md cursor-pointer opacity-70 hover:opacity-100 hover:bg-[var(--baklava-control-color-background)] transition-colors'
 
-// Category, description and icon come only from metadata.editor
-const entries: SidebarEntry[] = nodeLibrary.map(node => ({
-  type: flowpipeNodeTypeKey(node),
-  // Same fallback as the node title in flowpipeNodeToBaklava()
-  label: node.metadata?.label || node.func?.name || node.cls,
-  description: node.metadata?.editor?.description,
-  icon: node.metadata?.editor?.icon,
-  category: node.metadata?.editor?.category || UNCATEGORIZED,
-}))
+const entries = buildNodeEntries(nodeLibrary)
 
 // Categories keep the order of the library, nodes without a category come last
 const groups = computed(() => {
   const q = query.value.toLowerCase().trim()
-  const matches = (entry: SidebarEntry) =>
+  const matches = (entry: NodeEntry) =>
     !q || [entry.label, entry.description, entry.category].some(text => text?.toLowerCase().includes(q))
 
-  const byCategory = new Map<string, SidebarEntry[]>()
+  const byCategory = new Map<string, NodeEntry[]>()
   for (const entry of entries) {
     if (!matches(entry)) continue
     const list = byCategory.get(entry.category) ?? []

@@ -17,7 +17,10 @@ Built with **Vue 3**, **TypeScript**, **Baklava.js**, and **Vite**. Shipped as t
 
 ## Features
 
-- Visual node-graph canvas — add nodes from the node palette and connect outputs to inputs
+- Visual node-graph canvas — add nodes and connect outputs to inputs
+- Node sidebar — nodes grouped by category with icon and description, searchable, added by drag & drop or click
+- Node search — press `Tab` over the canvas to search nodes and add one at the mouse position with `Enter`, like in Nuke
+- Inspector sidebar — rename the selected node, edit its inputs and remove it; shows the graph info when no node is selected
 - Toolbar with undo / redo, copy / paste, box select and zoom to fit
 - Node library defined as serialized Flowpipe nodes — input widgets are derived from the default values
 - Open an existing Flowpipe graph in the editor
@@ -182,7 +185,8 @@ The package registers `flowpipe-editor` in TypeScript's `HTMLElementTagNameMap`,
 | Pan | Drag on empty canvas |
 | Zoom | Mouse wheel, pinch on touch devices |
 | Fit all nodes into view | `F` |
-| Add node | Drag from the node palette onto the canvas |
+| Add node | Drag from the node sidebar onto the canvas, or click it to add it in the center |
+| Search and add node | `Tab` over the canvas, type, `↑` / `↓` to pick, `Enter` to add at the mouse position; `Tab` or `Esc` closes |
 | Move node | Drag the node header |
 | Select / add to selection | Click / `Ctrl` or `Shift` + click |
 | Box select | `B`, then drag on the canvas |
@@ -238,7 +242,7 @@ This starts a local playground ([`src/main.ts`](src/main.ts)) with demo nodes an
 ```
 src/
   index.ts          Package entry: custom element, registerFlowPipeEditor, exported types
-  components/       FlowPipeEditor (root), TopBar, GraphCanvas
+  components/       FlowPipeEditor (root), TopBar, GraphCanvas, NodeSearchDialog, node sidebar and inspector
   composables/      useFlowpipeEditor – Baklava setup, node registration, export
   util/             Converters between Flowpipe JSON and Baklava's graph state
   types/            Flowpipe serialization types, editor props
