@@ -77,11 +77,10 @@ export function flowpipeNodeToBaklava(node: SerializedFlowpipeNode): INodeDefini
 // Flowpipe -> Baklava: turn a serialized flowpipe graph into a loadable state
 // ---------------------------------------------------------------------------
 
-/** Width and twoColumn are left out on purpose: renderer-vue fills in its defaults. */
 /**
- * Node state as `Graph.load()` consumes it, plus the `position` renderer-vue reads
- * in its beforeLoad hook. `width` and `twoColumn` are left out on purpose, the
- * renderer fills in its defaults.
+ * Node state as `Graph.load()` consumes it, plus the `position` and `width`
+ * renderer-vue reads in its beforeLoad hook. A missing `width` and `twoColumn`
+ * are left to the renderer, which fills in its defaults.
  *
  * Not Baklava's own `INodeState`: that type intersects with
  * `NodeInterfaceDefinitionStates<Record<string, NodeInterface<any>>>`, which
@@ -95,6 +94,7 @@ interface LoadableNodeState {
     inputs: Record<string, LoadableInterfaceState>;
     outputs: Record<string, LoadableInterfaceState>;
     position: { x: number; y: number; };
+    width?: number;
 }
 
 interface LoadableInterfaceState {
@@ -198,13 +198,18 @@ export function flowpipeGraphToBaklava(
             outputInterfaces.set(plug.name || key, id);
         }
 
+        const position = node.metadata?.editor?.position;
         nodes.push({
             type,
             id: nodeId,
             title: node.name,
             inputs,
             outputs,
-            position: node.metadata?.editor?.position ?? { x: 0, y: 0 },
+            // Copied, not referenced: renderer-vue mutates node.position while dragging.
+            // A frozen, readonly or foreign-reactive object from the graph prop would
+            // either throw, ignore the write or never re-render.
+            position: { x: position?.x ?? 0, y: position?.y ?? 0 },
+            width: node.metadata?.editor?.width,
         });
 
         byIdentifier.set(node.identifier, { nodeId, name: node.name, inputInterfaces, outputInterfaces });

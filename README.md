@@ -205,7 +205,7 @@ npm install
 npm run dev
 ```
 
-This starts a local playground ([`src/main.ts`](src/main.ts), [`src/App.vue`](src/App.vue)) at `http://localhost:5173`. It is not part of the published package.
+This starts a local playground ([`src/main.ts`](src/main.ts)) with demo nodes and dummy save/run handlers at `http://localhost:5173`. It is not part of the published package.
 
 ### Scripts
 
@@ -224,7 +224,7 @@ src/
   composables/      useFlowpipeEditor – Baklava setup, node registration, export
   util/             Converters between Flowpipe JSON and Baklava's graph state
   types/            Flowpipe serialization types, editor props
-  main.ts, App.vue  Local playground (not published)
+  main.ts           Local playground (not published)
 demo/               Demo app that uses the published npm package
 .github/workflows/  publish.yml (npm release), pages.yml (demo deployment)
 ```

@@ -9,11 +9,6 @@ import { BaklavaEditor } from '@baklavajs/renderer-vue'
 import { useFlowpipeEditor } from '../composables/useFlowpipeEditor'
  
 const { baklava } = useFlowpipeEditor() 
-// baklava.settings.palette.enabled = false
-// baklava.settings.sidebar.enabled = false
-// baklava.settings.toolbar.enabled = false
-// baklava.settings.enableMinimap = true
-// baklava.settings.displayValueOnHover = true
 
 // TODO: Check if the connections between the nodes are valid. If not, remove them.
 // Belongs into useFlowpipeEditor() next to the node type registration.

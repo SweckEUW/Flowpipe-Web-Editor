@@ -15,7 +15,10 @@ const FlowpipeEditorKey: InjectionKey<FlowpipeEditorContext> = Symbol("flowpipe-
 
 export function provideFlowpipeEditor(nodeLibrary: SerializedFlowpipeNode[], graph?: SerializedFlowpipeGraph): FlowpipeEditorContext {
   const baklava = useBaklava();
-  
+  // Width only: Baklava derives a node's height from its interfaces.
+  baklava.settings.nodes.resizable = true;
+  baklava.settings.nodes.maxWidth = 600;
+
   // Register all node types in the library with Baklava
   for (const node of nodeLibrary) {
     const definition = flowpipeNodeToBaklava(node);
