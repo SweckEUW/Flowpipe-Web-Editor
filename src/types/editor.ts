@@ -10,4 +10,5 @@ export interface FlowPipeEditorProps {
   displayDownloadButton?: boolean
   displayLoadButton?: boolean
   disableSidebar?: boolean
+  disableInspector?: boolean
 }

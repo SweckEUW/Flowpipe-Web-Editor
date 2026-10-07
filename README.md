@@ -136,6 +136,7 @@ React 18 and older pass them as attributes. There, create the element with `docu
 | `displayDownloadButton` | `boolean` | `false` | Shows the **Download** button, which saves the graph as `<graph name>.json`. |
 | `displayLoadButton` | `boolean` | `false` | Shows the **Load Graph** button for selecting a `.json` file. *Work in progress.* |
 | `disableSidebar` | `boolean` | `false` | Hides the node sidebar on the left, from which nodes are dragged onto the canvas. |
+| `disableInspector` | `boolean` | `false` | Hides the inspector sidebar on the right. It shows the graph info when no node is selected, and the name, inputs and a remove button of the selected node. |
 
 `nodeLibrary` and `graph` are only read when the editor is initialized, so set them before the element is added to the DOM.
 

@@ -34,8 +34,11 @@ export function useNodeActions() {
     select(node);
   };
 
+  // Baklava keeps removed nodes in the selection, which would leave the inspector on a deleted node
   const remove = (node: AbstractNode) => {
-    baklava.displayedGraph.removeNode(node);
+    const graph = baklava.displayedGraph;
+    graph.removeNode(node);
+    graph.selectedNodes = graph.selectedNodes.filter(n => n !== node);
   };
 
   const rename = (node: AbstractNode, title: string) => {

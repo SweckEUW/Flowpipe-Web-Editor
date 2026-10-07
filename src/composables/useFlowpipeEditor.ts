@@ -8,6 +8,8 @@ import { flowpipeGraphToBaklava, flowpipeNodeToBaklava, } from "../util/flowpipe
 export interface FlowpipeEditorContext {
   baklava: IBaklavaViewModel;
   nodeLibrary: SerializedFlowpipeNode[];
+  /** Name of the loaded graph, also used when converting back */
+  graphName: string;
   toFlowpipeGraph: () => SerializedFlowpipeGraph;
   /** Element around the Baklava editor, set by GraphCanvas; needed to place nodes at screen positions */
   canvasEl: ShallowRef<HTMLElement | null>;
@@ -72,11 +74,14 @@ export function provideFlowpipeEditor(nodeLibrary: SerializedFlowpipeNode[], gra
 
   loadInitialGraph();
 
+  const graphName = graph?.name ?? "flowpipe.graph";
+
   const context: FlowpipeEditorContext = {
     baklava,
     nodeLibrary,
+    graphName,
     toFlowpipeGraph: () => baklavaToFlowpipeGraph(baklava.displayedGraph, nodeLibrary, {
-      name: graph?.name ?? "flowpipe.graph",
+      name: graphName,
       module: graph?.module ?? "flowpipe.graph",
       cls: graph?.cls ?? "FlowpipeGraph",
     }),

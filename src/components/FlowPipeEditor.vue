@@ -15,7 +15,9 @@
 
       <div class="flex-1 relative overflow-hidden">
         <GraphCanvas />
-      </div>  
+      </div>
+
+      <InspectorSidebar v-if="!disableInspector" />
     </div>
   </div>
 </template>
@@ -29,9 +31,10 @@ import { provideFlowpipeEditor } from '../composables/useFlowpipeEditor';
 import GraphCanvas from './canvas/GraphCanvas.vue';
 import TopBar from './TopBar.vue';
 import NodeSidebar from './sidebar/NodeSidebar.vue';
+import InspectorSidebar from './sidebar/InspectorSidebar.vue';
 import type { FlowPipeEditorProps } from '../types/editor';
 
-const { nodeLibrary = [], graph = undefined, saveHandler, runHandler, disableSidebar = false } = defineProps<FlowPipeEditorProps>()
+const { nodeLibrary = [], graph = undefined, saveHandler, runHandler, disableSidebar = false, disableInspector = false } = defineProps<FlowPipeEditorProps>()
 
 provideFlowpipeEditor(nodeLibrary, graph)
 </script>
