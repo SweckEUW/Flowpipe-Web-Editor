@@ -34,6 +34,7 @@ interface SavedNodeState {
     inputs: Record<string, { id: string; value: unknown; }>;
     outputs: Record<string, { id: string; value: unknown; }>;
     position?: { x: number; y: number; };
+    width?: number;
     /** Only on subgraph container nodes: the nested graph */
     graphState?: { nodes?: unknown[]; };
 }
@@ -194,6 +195,7 @@ export function baklavaToFlowpipeGraph(
             id: nodeState.id,
             type: nodeState.type,
             ...(nodeState.position ? { position: { ...nodeState.position } } : {}),
+            ...(nodeState.width ? { width: nodeState.width } : {}),
         };
 
         const inputs: Record<string, SerializedInputPlug> = {};

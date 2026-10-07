@@ -46,6 +46,8 @@ export interface EditorNodeMetadata {
   /** Baklava node type key, see flowpipeNodeTypeKey(). */
   type?: string;
   position?: { x: number; y: number };
+  /** Node width in px; missing means Baklava's default width. */
+  width?: number;
 }
 
 // Free-form dict in flowpipe; only these keys carry a meaning by convention.
