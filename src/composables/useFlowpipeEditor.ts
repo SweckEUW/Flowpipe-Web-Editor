@@ -1,4 +1,4 @@
-import { inject, provide, type InjectionKey } from "vue";
+import { inject, provide, shallowRef, type InjectionKey, type ShallowRef } from "vue";
 import { defineNode } from "@baklavajs/core";
 import { useBaklava, type IBaklavaViewModel } from "@baklavajs/renderer-vue";
 import type { SerializedFlowpipeGraph, SerializedFlowpipeNode } from "../types/flowpipe";
@@ -9,6 +9,8 @@ export interface FlowpipeEditorContext {
   baklava: IBaklavaViewModel;
   nodeLibrary: SerializedFlowpipeNode[];
   toFlowpipeGraph: () => SerializedFlowpipeGraph;
+  /** Element around the Baklava editor, set by GraphCanvas; needed to place nodes at screen positions */
+  canvasEl: ShallowRef<HTMLElement | null>;
 }
 
 const FlowpipeEditorKey: InjectionKey<FlowpipeEditorContext> = Symbol("flowpipe-editor");
@@ -27,7 +29,8 @@ export function provideFlowpipeEditor(nodeLibrary: SerializedFlowpipeNode[], gra
   baklava.settings.nodes.resizable = true;
   baklava.settings.nodes.maxWidth = 600;
   baklava.settings.toolbar.enabled = false;
-  // baklava.settings.sidebar.enabled = false;
+  baklava.settings.sidebar.enabled = false;
+  baklava.settings.palette.enabled = false;
 
   // Baklava only saves the node properties it knows, so the color is carried through
   // these hooks. They run for graph loads as well as for copy, paste and duplicate.
@@ -41,13 +44,10 @@ export function provideFlowpipeEditor(nodeLibrary: SerializedFlowpipeNode[], gra
     return state;
   });
 
-  // Register all node types in the library with Baklava
+  // Register all node types in the library with Baklava. Categories are not passed on,
+  // the NodeSidebar reads them from metadata.editor itself.
   for (const node of nodeLibrary) {
-    const definition = flowpipeNodeToBaklava(node);
-    // The category is a registration option in Baklava, not part of the node definition
-    baklava.editor.registerNodeType(defineNode(definition), {
-      category: node.metadata?.editor?.category || "Uncategorized",
-    });
+    baklava.editor.registerNodeType(defineNode(flowpipeNodeToBaklava(node)));
   }
 
   const loadInitialGraph = () => {
@@ -79,7 +79,8 @@ export function provideFlowpipeEditor(nodeLibrary: SerializedFlowpipeNode[], gra
       name: graph?.name ?? "flowpipe.graph",
       module: graph?.module ?? "flowpipe.graph",
       cls: graph?.cls ?? "FlowpipeGraph",
-    })
+    }),
+    canvasEl: shallowRef(null),
   };
 
   provide(FlowpipeEditorKey, context);

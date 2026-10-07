@@ -129,12 +129,13 @@ React 18 and older pass them as attributes. There, create the element with `docu
 
 | Prop | Type | Default | Description |
 |------|------|---------|-------------|
-| `nodeLibrary` | `SerializedFlowpipeNode[]` | `[]` | Nodes the editor offers in the node palette. The default `value` of an input decides its widget: boolean → checkbox, number → number field, string or `null` → text field. |
+| `nodeLibrary` | `SerializedFlowpipeNode[]` | `[]` | Nodes the editor offers in the node sidebar, grouped by `metadata.editor.category`. The default `value` of an input decides its widget: boolean → checkbox, number → number field, string or `null` → text field. |
 | `graph` | `SerializedFlowpipeGraph` | – | Flowpipe graph that is opened when the editor starts. Its `name`, `module` and `cls` are kept when the graph is exported. |
 | `saveHandler` | `(graph: SerializedFlowpipeGraph) => Promise<void> \| void` | – | Called with the current graph when **Save** is clicked. The button is only shown if the handler is set. |
 | `runHandler` | `(graph: SerializedFlowpipeGraph) => Promise<void> \| void` | – | Called with the current graph when **Execute** is clicked. The button is only shown if the handler is set. |
 | `displayDownloadButton` | `boolean` | `false` | Shows the **Download** button, which saves the graph as `<graph name>.json`. |
 | `displayLoadButton` | `boolean` | `false` | Shows the **Load Graph** button for selecting a `.json` file. *Work in progress.* |
+| `disableSidebar` | `boolean` | `false` | Hides the node sidebar on the left, from which nodes are dragged onto the canvas. |
 
 `nodeLibrary` and `graph` are only read when the editor is initialized, so set them before the element is added to the DOM.
 

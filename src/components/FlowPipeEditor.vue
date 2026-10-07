@@ -4,6 +4,8 @@
     <!-- <TabBar /> -->
 
     <div class="canvas-area flex flex-1 overflow-hidden">
+      <NodeSidebar v-if="!disableSidebar" />
+
       <div class="flex-1 relative overflow-hidden">
         <GraphCanvas />
       </div>  
@@ -26,12 +28,13 @@ import '../style.css'
 
 import { provideFlowpipeEditor } from '../composables/useFlowpipeEditor';
 import GraphCanvas from './canvas/GraphCanvas.vue';
-import TopBar from './TopBar.vue';   
+import TopBar from './TopBar.vue';
+import NodeSidebar from './sidebar/NodeSidebar.vue';
 import type { FlowPipeEditorProps } from '../types/editor';
 // import RightSidebar from './RightSidebar.vue'
 // import NodeSearchDialog from './canvas/NodeSearchDialog.vue'
 
-const { nodeLibrary = [], graph = undefined, saveHandler, runHandler } = defineProps<FlowPipeEditorProps>()
+const { nodeLibrary = [], graph = undefined, saveHandler, runHandler, disableSidebar = false } = defineProps<FlowPipeEditorProps>()
 
 provideFlowpipeEditor(nodeLibrary, graph)
 </script>

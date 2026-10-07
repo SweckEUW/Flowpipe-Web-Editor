@@ -5,12 +5,33 @@ import { useFlowpipeEditor } from "./useFlowpipeEditor";
 /** Offset of a duplicate to its original, so it does not hide behind it */
 const DUPLICATE_OFFSET = 40;
 
+/** dataTransfer type of a node dragged from the NodeSidebar onto the canvas; the data is the node type */
+export const NODE_DRAG_TYPE = "application/x-flowpipe-node";
+
 /** Operations on a single node, used by the node toolbar and the node menus. */
 export function useNodeActions() {
-  const { baklava } = useFlowpipeEditor();
+  const { baklava, canvasEl } = useFlowpipeEditor();
 
   const select = (node: AbstractNode) => {
     baklava.displayedGraph.selectedNodes = [node];
+  };
+
+  /** Adds a node of the given type with its top left corner at a screen position, e.g. a drop point */
+  const add = (type: string, clientX: number, clientY: number) => {
+    const nodeType = baklava.editor.nodeTypes.get(type);
+    if (!nodeType || !canvasEl.value) return;
+
+    const graph = baklava.displayedGraph;
+    // addNode returns the node as the graph holds it, i.e. the reactive version
+    const node = graph.addNode(new nodeType.type());
+    if (!node) return;
+
+    // Same transformation as Baklava's own palette: screen px -> graph coordinates
+    const rect = canvasEl.value.getBoundingClientRect();
+    node.position.x = (clientX - rect.left) / graph.scaling - graph.panning.x;
+    node.position.y = (clientY - rect.top) / graph.scaling - graph.panning.y;
+
+    select(node);
   };
 
   const remove = (node: AbstractNode) => {
@@ -61,5 +82,5 @@ export function useNodeActions() {
     select(duplicate);
   };
 
-  return { select, remove, rename, setColor, copy, duplicate };
+  return { select, add, remove, rename, setColor, copy, duplicate };
 }

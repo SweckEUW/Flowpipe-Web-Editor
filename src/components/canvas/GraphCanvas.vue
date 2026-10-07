@@ -1,5 +1,6 @@
 <template>
-  <div class="h-full w-full">
+  <!-- Drop target for the NodeSidebar entries -->
+  <div ref="canvas" class="h-full w-full" @dragover="onDragOver" @drop="onDrop">
     <BaklavaEditor :view-model="baklava">
       <template #node="{ node, selected, dragging, onSelect, onStartDrag }">
         <FlowpipeNode
@@ -15,11 +16,33 @@
 </template>
 
 <script setup lang="ts">
+import { onMounted, onUnmounted, useTemplateRef } from 'vue'
 import { BaklavaEditor } from '@baklavajs/renderer-vue'
 import { useFlowpipeEditor } from '../../composables/useFlowpipeEditor'
+import { NODE_DRAG_TYPE, useNodeActions } from '../../composables/useNodeActions'
 import FlowpipeNode from '../node/FlowpipeNode.vue'
- 
-const { baklava } = useFlowpipeEditor() 
+
+const { baklava, canvasEl } = useFlowpipeEditor()
+const actions = useNodeActions()
+
+// Shared through the context, so the sidebar can place nodes in the visible area
+const canvas = useTemplateRef<HTMLDivElement>('canvas')
+onMounted(() => { canvasEl.value = canvas.value })
+onUnmounted(() => { canvasEl.value = null })
+
+// Only drags from the NodeSidebar are accepted, files or text dropped on the canvas are ignored
+function onDragOver(ev: DragEvent) {
+  if (!ev.dataTransfer?.types.includes(NODE_DRAG_TYPE)) return
+  ev.preventDefault()
+  ev.dataTransfer.dropEffect = 'copy'
+}
+
+function onDrop(ev: DragEvent) {
+  const type = ev.dataTransfer?.getData(NODE_DRAG_TYPE)
+  if (!type) return
+  ev.preventDefault()
+  actions.add(type, ev.clientX, ev.clientY)
+}
 
 // TODO: Check if the connections between the nodes are valid. If not, remove them.
 // Belongs into useFlowpipeEditor() next to the node type registration.
